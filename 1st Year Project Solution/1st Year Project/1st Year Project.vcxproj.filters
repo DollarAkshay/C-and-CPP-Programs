@@ -15,7 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Maximum_of_2_Numbers.cpp">
+    <ClCompile Include="Snake.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Hacker_Rank.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
