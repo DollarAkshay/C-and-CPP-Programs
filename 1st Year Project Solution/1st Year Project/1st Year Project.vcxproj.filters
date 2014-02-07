@@ -15,10 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Snake.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Hacker_Rank.cpp">
+    <ClCompile Include="Chocolate_Wrapper_Problem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

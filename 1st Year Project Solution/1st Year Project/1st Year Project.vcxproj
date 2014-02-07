@@ -78,8 +78,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Hacker_Rank.cpp" />
-    <ClCompile Include="Snake.cpp" />
+    <ClCompile Include="Chocolate_Wrapper_Problem.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
