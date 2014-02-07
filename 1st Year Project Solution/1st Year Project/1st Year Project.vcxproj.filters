@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Quadratic_Equation.cpp">
+    <ClCompile Include="Maximum_of_2_Numbers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
