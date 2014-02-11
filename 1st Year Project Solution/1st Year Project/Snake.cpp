@@ -10,7 +10,7 @@ void main(){
 	int snake_length;
 	int n=20;
 	char board[20][20];
-
+	printf("Use the W,S,A,D keys to move\n");
 	for (int i = 0; i < n ; i++){
 		for (int j = 0; j < n ; j++){
 			board[i][j] = '.';
@@ -25,7 +25,7 @@ void main(){
 	printf("\n");
 	}
 	char c1 = _getch();
-	while((c1 != 'o') || (_getch()==c1))
+	while(c1 != 'o') 
 
 	{
 
@@ -49,6 +49,7 @@ void main(){
 		}
 
 		system("cls");
+		printf("Use the W,S,A,D keys to move\n");
 		for (int i = 0; i < n; i++){
 			for (int j = 0; j < n; j++){
 				board[i][j] = '.';
@@ -64,6 +65,7 @@ void main(){
 
 		
 		Sleep(200);
+		c1 = _getch();
 	}
 	
 }
