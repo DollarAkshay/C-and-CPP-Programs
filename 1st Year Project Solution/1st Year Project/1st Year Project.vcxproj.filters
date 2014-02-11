@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Series_Generator.cpp">
+    <ClCompile Include="Multipliaction_Tables.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
