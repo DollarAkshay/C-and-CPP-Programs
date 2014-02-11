@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="LCM_HCF.cpp">
+    <ClCompile Include="Series_Generator.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
