@@ -10,9 +10,6 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
-  <ItemGroup>
-    <ClCompile Include="Multipliaction_Tables.cpp" />
-  </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64F097C5-22B3-426D-8270-367C900B9185}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
