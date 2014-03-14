@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Bubble_Sort.cpp">
+    <ClCompile Include="Insertion_Sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
