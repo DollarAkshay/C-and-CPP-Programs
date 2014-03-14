@@ -18,13 +18,12 @@ void main(){
 		}
 	}
 
-	for (i = 0; i <m; i++){			//Speciies Row
+	for (i = 0; i <m; i++){				//Speciies Row
 		for (j = 0; j < p; j++){		//Speciies Column
 			printf("%3d ",c[i][j]);
 		}
 		printf("\n");
 	}
-
 
 	_getch();
 }
