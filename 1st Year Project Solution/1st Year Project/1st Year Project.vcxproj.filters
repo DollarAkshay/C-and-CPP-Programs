@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Fibonacci_Recursive.cpp">
+    <ClCompile Include="Bubble_Sort.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
