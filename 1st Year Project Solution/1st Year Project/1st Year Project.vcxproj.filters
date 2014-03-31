@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Pattern_Printing.cpp">
+    <ClCompile Include="Word_Count.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
