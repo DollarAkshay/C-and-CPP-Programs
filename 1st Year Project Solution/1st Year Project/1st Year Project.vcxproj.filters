@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Word_Count.c">
+    <ClCompile Include="Fibonacci_CodeGolf.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

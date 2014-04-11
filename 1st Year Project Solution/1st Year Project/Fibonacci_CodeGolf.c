@@ -1,2 +1,1 @@
-a; main(f, n){ scanf("%d", &n); 
-while (--n)f += a = f - a; printf("%d", f - a); }
+a,n;main(f){scanf("%d",&n);while(n--)printf("%d",a),f+=a=f-a;}
