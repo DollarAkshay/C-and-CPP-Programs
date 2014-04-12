@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Odd.cpp">
+    <ClCompile Include="CodeChef - Enormous Input Test.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
