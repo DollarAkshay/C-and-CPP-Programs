@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Fibonacci_CodeGolf.c">
+    <ClCompile Include="Odd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
