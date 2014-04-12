@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="CodeChef - Enormous Input Test.cpp">
+    <ClCompile Include="Parallel_Array_Addiion.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
