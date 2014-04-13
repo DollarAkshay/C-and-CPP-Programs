@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Matrix_Multiplication.cpp">
+    <ClCompile Include="Linear_Search.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
