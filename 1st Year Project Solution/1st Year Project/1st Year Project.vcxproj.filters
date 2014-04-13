@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Linear_Search.c">
+    <ClCompile Include="Swap_2_variables.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
