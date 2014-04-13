@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Parallel_Array_Addiion.c">
+    <ClCompile Include="Square_of_Array_Elements.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
