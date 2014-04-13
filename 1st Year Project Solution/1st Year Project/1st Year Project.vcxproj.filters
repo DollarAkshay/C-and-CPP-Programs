@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Square_of_Array_Elements.cpp">
+    <ClCompile Include="Fibonacci_using_Arrays.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

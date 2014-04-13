@@ -11,3 +11,4 @@ int main(){
 	for (i = 0; i < n; printf("%d ", a[i]*a[i++]));
 	_getch();
 }
+

@@ -11,7 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Square_of_Array_Elements.cpp" />
+    <ClCompile Include="Fibonacci_using_Arrays.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64F097C5-22B3-426D-8270-367C900B9185}</ProjectGuid>
