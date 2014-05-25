@@ -3,7 +3,6 @@
 #include<conio.h>
 #include<stdlib.h>
 
-
 int board[4][4],copy[4][4],score=0;
 
 void createNewGame(){
@@ -35,7 +34,15 @@ int checkStateChange(){
 
 void printBoard(){
 	system("cls");
-	printf("\n\nScore = %6d",score);
+
+	printf("\n");
+	printf("\t\t    /^^^\\      /^^^\\    |^|           /^^^^\\      \n");
+	printf("\t\t   /_/\\  \\    |  -  |   | |_|^|__    |  ()  |     \n");
+	printf("\t\t      /  /    | | | |   |___   __|    >    <      \n");
+	printf("\t\t     /  /_    |  -  |       | |      |  ()  |     \n");
+	printf("\t\t    |_____|    \\___/        |_|       \\____/      \n");
+
+	printf("\n\nScore^ = %6d",score);
 	printf("\n+----+----+----+----+\n");
 	for (int i = 0; i < 4; i++){
 		for (int j = 0; j < 4; j++)
