@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Swap_2_variables.c">
+    <ClCompile Include="2048.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
