@@ -6,10 +6,23 @@
 
 int board[4][4],copy[4][4],score=0;
 
+void createNewGame(){
+	int i;
+	for (i = 0; i < 16; i++)
+		board[i / 4][i % 4] = copy[i / 4][i % 4]=0;
+	score = 0;
+}
+
 void copyBoard(){
 	int i;
 	for (i = 0; i < 16; i++)
 		copy[i / 4][i % 4] = board[i / 4][i % 4];
+}
+
+void rollbackBoard(){
+	int i;
+	for (i = 0; i < 16; i++)
+		board[i / 4][i % 4] = copy[i / 4][i % 4];
 }
 
 int checkStateChange(){
@@ -32,28 +45,6 @@ void printBoard(){
 			printf("|    ");
 		printf("|\n");
 		printf("+----+----+----+----+\n");
-	}
-}
-
-void generateNumber(){
-	
-	int blank = 0,i;
-	for (i = 0; i < 16;i++)
-	if (board[i / 4][i % 4] == 0)
-		blank++;
-
-	int square = rand() % blank;
-	int n = rand()%4;
-	n = n < 3 ? 2 : 4;
-	for (i = 0; i < 16; i++){
-		if (square == 0 && board[i / 4][i % 4] == 0){
-			board[i / 4][i % 4] = n;
-			printBoard();
-			printf("\nBoard %d,%d = %d", i/4, i%4,n);
-			break;
-		}
-		else if (board[i / 4][i % 4] == 0)
-			square--;
 	}
 }
 
@@ -214,39 +205,108 @@ int right(){
 	return checkStateChange();
 }
 
+int checkGameOver(){
+	if (up()){
+		rollbackBoard();
+		return 0;
+	}
+	else if (down()){
+		rollbackBoard();
+		return 0;
+	}
+	else if (left()){
+		rollbackBoard();
+		return 0;
+	}
+	else if (right()){
+		rollbackBoard();
+		return 0;
+	}
+	return 1;
+}
+
+int generateNumber(char c){
+
+	int blank = 0, i;
+	for (i = 0; i < 16; i++)
+	if (board[i / 4][i % 4] == 0)
+		blank++;
+
+	int square = rand() % blank;
+	int n = rand() % 4;
+	n = n < 3 ? 2 : 4;
+	for (i = 0; i < 16; i++){
+		if (square == 0 && board[i / 4][i % 4] == 0){
+			board[i / 4][i % 4] = n;
+			printBoard();
+			printf("\nBoard %d,%d = %d", i / 4, i % 4, n);
+			break;
+		}
+		else if (board[i / 4][i % 4] == 0)
+			square--;
+	}
+	switch (c){
+		case 'w' :
+		printf("\nUP");
+		break;
+		case 's':
+			printf("\nDOWN");
+			break;
+		case 'a':
+			printf("\nLEFT");
+			break;
+		case 'd':
+			printf("\nRIGHT");
+			break;
+	}
+	if (blank == 1 && checkGameOver())
+		return 1;
+	else
+		return 0;
+}
+
 void main(){
-	int change;
+
+	int change,finish;
 	srand(time(NULL));
-	generateNumber();
+	start :
+	createNewGame();
+	generateNumber(NULL);
 	char c = _getch();
+
 	while (c != 'x'){
-		if (c == 'w'){
+		if (c == 'w')
 			change = up();
-			if (change)
-				printf("\nUP");
-		}
-		else if (c == 's'){
+		else if (c == 's')
 			change = down();
-			if (change)
-				printf("\nDOWN");
-		}
-		else if (c == 'a'){
+		else if (c == 'a')
 			change = left();
-			if (change)
-				printf("\nLEFT");
-		}
-		else if (c == 'd'){
+		else if (c == 'd')
 			change = right();
-			if (change)
-				printf("\nRIGHT");
-		}
 	
 		if (change)
-			generateNumber();
+			finish = generateNumber(c);
 		else
 			printf("\nINVALID");
+		if (finish)
+			c = 'x';
+		else
 		c = _getch();
 	}
-	_getch();
+	printf("\n\n ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ GAME OVER ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+	printf("\n\n Your Score : %6d", score);
+	printf("\n\n Do you want to play again ? (Y/N)  : ");
 
+	exit:
+	c = _getch();
+	if (c == 'y' || c == 'Y')
+		goto start;
+	else if (c == 'n'){
+		printf("\n\n ~~~~~~~~~~~~~~~~~~~~~~~~ THANKS FOR PLAYING 2048  ~~~~~~~~~~~~~~~~~~~~~~~~~ ");
+		printf("\n\n Created by ©Akshay.L.Aradhya \n Contact : akshay95aradhya@gmail.com \n  ");
+		printf("\n\n Press any key to exit ... ");
+	}
+	else
+		goto exit;
+	_getch();
 }
