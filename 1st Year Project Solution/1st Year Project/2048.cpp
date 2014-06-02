@@ -2,6 +2,7 @@
 #include<time.h>
 #include<conio.h>
 #include<stdlib.h>
+#include<windows.h>
 
 int board[4][4],copy[4][4],score=0;
 
@@ -42,7 +43,7 @@ void printBoard(){
 	printf("\t\t     /  /_    |  -  |       | |      |  ()  |     \n");
 	printf("\t\t    |_____|    \\___/        |_|       \\____/      \n");
 
-	printf("\n\nScore^ = %6d",score);
+	printf("\n\nScore = %6d",score);
 	printf("\n+----+----+----+----+\n");
 	for (int i = 0; i < 4; i++){
 		for (int j = 0; j < 4; j++)
@@ -272,9 +273,57 @@ int generateNumber(char c){
 		return 0;
 }
 
+void credits(){
+	int i;
+	printf("\n\n");
+
+	for (i = 1; i <= 27; i++){
+		printf("~");
+		Sleep(80);
+	}
+	
+	printf(" THANKS ");
+	Sleep(400);
+	printf("FOR ");
+	Sleep(400);
+	printf("PLAYING ");
+	Sleep(400);
+	printf("2");
+	Sleep(400);
+	printf("0");
+	Sleep(400);
+	printf("4");
+	Sleep(400);
+	printf("8 ");
+	Sleep(400);
+	for (i = 1; i <= 27; i++){
+		printf("~");
+		Sleep(80);
+	}
+	Sleep(500);
+	printf("\n\n Created by ");
+	Sleep(1000);
+	printf("$ ");
+	Sleep(500);
+	printf("Akshay");
+	Sleep(500);
+	printf(".L.");
+	Sleep(500);
+	printf("Aradhya ");
+	Sleep(500);
+	printf("$");
+	Sleep(1500);
+
+	printf("\n Contact : akshay95aradhya@gmail.com \n  ");
+	Sleep(500);
+	printf("\n\n Press any key to exit...");
+
+}
+
+
 void main(){
 
-	int change,finish;
+	int change,finish=0;
 	srand(time(NULL));
 	start :
 	createNewGame();
@@ -305,15 +354,14 @@ void main(){
 	printf("\n\n Do you want to play again ? (Y/N)  : ");
 
 	exit:
-	c = _getch();
+	c = _getche();
 	if (c == 'y' || c == 'Y')
 		goto start;
-	else if (c == 'n'){
-		printf("\n\n ~~~~~~~~~~~~~~~~~~~~~~~~ THANKS FOR PLAYING 2048  ~~~~~~~~~~~~~~~~~~~~~~~~~ ");
-		printf("\n\n Created by ©Akshay.L.Aradhya \n Contact : akshay95aradhya@gmail.com \n  ");
-		printf("\n\n Press any key to exit ... ");
-	}
-	else
+	else if (c == 'n')
+		credits();
+	else{
+		printf("\b");
 		goto exit;
+	}
 	_getch();
 }
