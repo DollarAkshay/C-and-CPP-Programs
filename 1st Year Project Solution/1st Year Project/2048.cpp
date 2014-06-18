@@ -1,4 +1,4 @@
-<<<<<<< HEAD:1st Year Project Files/1st Year Programs/2048.cpp
+
 #include<stdio.h>
 #include<time.h>
 #include<conio.h>
@@ -684,5 +684,3 @@ void main(){
 	else
 		goto exit;
 	_getch();
->>>>>>> parent of 113fa0e... 2048:1st Year Project Solution/1st Year Project/2048.cpp
-}
