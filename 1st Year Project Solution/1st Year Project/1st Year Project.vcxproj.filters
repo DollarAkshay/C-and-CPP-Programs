@@ -15,7 +15,7 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="2048.cpp">
+    <ClCompile Include="Word_Length.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
