@@ -325,7 +325,7 @@ void credits(){
 void main(){
 
 	int change,finish=0;
-	srand(time(NULL));
+	
 	start :
 	createNewGame();
 	generateNumber(NULL);
