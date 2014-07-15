@@ -53,9 +53,10 @@ void main(){
 	}
 
 	t = clock() - t;
-	printf("\nIt took %f sec to sort %d numbers by Insertion sort\n", (float)t / CLOCKS_PER_SEC, n);
+	printf("\nIt took %f sec to sort %d num bers by Insertion sort\n", (float)t/CLOCKS_PER_SEC, n);
 	_getch();
 }
 
 
-// Normal Swaping took 8.9 seconds on average
+// Normal Swaping  took 8.91 seconds on average.
+// Linear Shifting took 6.19 seconds on average.
