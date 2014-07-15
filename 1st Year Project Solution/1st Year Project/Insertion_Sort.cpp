@@ -13,7 +13,7 @@ void swap(int *a, int *b){
 }
 
 void printArray(int n){
-	int i=0;
+	int i = 0;
 	while (i < n)
 		printf("%d ", a[i++]);
 	printf("\n");
@@ -24,31 +24,36 @@ void printArray(int n){
 void main(){
 	srand(time(NULL));
 
-	int x,read = 1;
+	int x, read = 1;
 	int key = 1;
 	const int n = 100000;
 	clock_t t;
 	FILE *fp;
 	fp = fopen("Array.txt", "r+");
 	for (int i = 0; i < n; i++){
-		fscanf(fp,"%d", &a[i]);
+		fscanf(fp, "%d", &a[i]);
 	}
+
 
 	t = clock();
 	//Insertion Sort
 	for (int i = 1; i < n; i++){
-		for (int j = i; j ; j--){
-			if (a[j] < a[j - 1]){
-				int t = a[j];
+		int t = a[i];
+		for (int j = i; j; j--){
+			if (t<a[j - 1]){
 				a[j] = a[j - 1];
-				a[j - 1] = t;
-			}		
-			else
+				if (j - 1 == 0)
+					a[j - 1] = t;
+			}
+			else{
+				a[j] = t;
 				break;
+			}
 		}
 	}
+
 	t = clock() - t;
-	printf("\nIt took %f sec to sort %d numbers by Insertion sort\n", (float)t/CLOCKS_PER_SEC,n);  
+	printf("\nIt took %f sec to sort %d numbers by Insertion sort\n", (float)t / CLOCKS_PER_SEC, n);
 	_getch();
 }
 
