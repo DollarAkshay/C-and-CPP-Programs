@@ -2,7 +2,7 @@
 #include<conio.h>
 #include<string.h>
 #include<math.h>
-
+//lol
 void printBinary(int n){
 	char bin[33];
 	bin[32] = '\0';

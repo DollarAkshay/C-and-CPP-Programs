@@ -11,8 +11,8 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Test 2 .cpp" />
-    <ClCompile Include="test.cpp" />
+    <ClCompile Include="Binary_Printing.cpp" />
+    <ClCompile Include="HackerEarth-SubarrayXOR.cpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{64F097C5-22B3-426D-8270-367C900B9185}</ProjectGuid>
