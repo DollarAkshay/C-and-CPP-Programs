@@ -53,6 +53,7 @@ Sample Output :
 void main(){
 	int t, n, *nx, *ny, fx, fy, nitro, normal, i;
 	long int imabitch;
+
 	scanf("%d", &t);
 	while (t--){
 		scanf("%d", &n);
@@ -77,10 +78,11 @@ void main(){
 		free(nx);
 		free(ny);
 	}
+
 }
 
-//Solved
 
+//Solved
 
 /*
 Without malloc - Much faster 0.37 sec
