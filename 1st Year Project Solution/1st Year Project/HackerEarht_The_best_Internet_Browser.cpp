@@ -1,6 +1,7 @@
 //http://www.hackerearth.com/problem/algorithm/the-best-internet-browser-3/
 
 #include <stdio.h>
+#include <string.h>
 
 int main(){
 
