@@ -1,4 +1,1 @@
-
-main(i){for(;i<101;i++)printf("%d%s%s\n",
-i%3*(i%5)?i:0,i%3?"":"\bFizz ",i%5?"":"\bBuzz");}
-                                                                                           
+main(i){for(;i<101;puts(i++%5?"":"Buzz"))printf(i%3?i%5?"%d":"":"Fizz");}
