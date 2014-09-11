@@ -1,7 +1,7 @@
 C and C++ Programs
 ==================
 
-This repository contains all my C/C++ programs I have written over the years.
+This repository contains most of my C/C++ programs I have written over the years.
 
 * <h4> 2nd Semester Programs</h4>
  Contains the basic beginner programs in C.
@@ -10,7 +10,7 @@ This repository contains all my C/C++ programs I have written over the years.
 * <h4> Code Golf</h4>
  Not much but it contains various Code Golf solutions to popular questions and problems.Code Golf is a type of programming competition where the aim is to write the smallest code possible for a given problem.
 * <h4> Competitive Coding</h4>
- This is basically a working solution to problems found on http://www.hackerearth.com/, http://www.codechef.com/ and https://www.hackerrank.com/
+ This is basically a working solution to problems found on [Hacker Earth](www.hackerearth.com), [Code Chef](www.codechef.com), [Hacker Rank](www.hackerrank.com)
 * <h4> Games & Grpahics</h4>
  Contains a few simple games likes 2048.Has a few simple ASCII Art animation.
 * <h4> Miscellaneous</h4>
