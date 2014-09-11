@@ -3,7 +3,7 @@ C and C++ Programs
 
 This repository contains all my C/C++ programs I have written over the years.
 
-* <h4> 2nd Semester Programs</h4>  
+* <h4> 2nd Semester Programs</h4>
  Contains the basic beginner programs in C.
 * <h4> 3rd Semester Programs</h4>  
  Contains C++ programs in adition to some simple Data Structures programs.
