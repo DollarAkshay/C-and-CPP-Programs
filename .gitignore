@@ -21,3 +21,6 @@
 *.sln
 *.vcxproj
 *.filters
+*.filters
+*.vcxproj
+*.sln
