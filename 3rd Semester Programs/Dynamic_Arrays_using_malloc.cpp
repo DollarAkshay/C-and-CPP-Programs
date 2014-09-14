@@ -9,7 +9,7 @@ void main(){
 	printf("Enter the array size : ");
 	scanf("%d", &n);
 
-	A = (int*)malloc(n*sizeof(int)); //Dynamic Array.Size allocated at runtime
+	A = (int*) malloc(n*sizeof(int)); //Dynamic Array.Size allocated at runtime
 
 	//Reading array 'A'
 	printf("\nEnter the elements : ");
