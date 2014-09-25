@@ -1,6 +1,3 @@
-
-//http://www.hackerearth.com/webengage-hiring-challenge-1/algorithm/numbers-of-interest-2-1/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -38,33 +35,35 @@ int main(){
 
 	int t, n;
 	ll int sum;
-	ll int f = 0, g = 0;
-	ll int a[1000000];
+	ll int f[1001], g[1001];
+	f[0] = f[1] = g[0] = g[1] = 0;
 
-	FOR(i, 2, 100000){
+	FOR(i, 2, 1000){
 		int found = 0;
-		int lim = sqrt(i);
-		FOR(j, 1, lim){
+		sum = 0;
+		FOR(j, 2, sqrt(i)){
 			if (i%j == 0){
-				g += j;
-				if (j != 1 && i / j>lim)
-					g += i / j;
+				sum += j;
 				if (!found && isPrime(j)){
-					f += j;
+					f[i] = f[i - 1] + j;
 					found = 1;
 				}
 			}
 		}
 		if (!found && isPrime(i))
-			f += i;
-		a[i] = f + g;
+			f[i] = f[i - 1] + i;
+		g[i] = g[i - 1] + sum;
 	}
-
+	REP(i, 100){
+		cout << " " << f[i];
+	}
+	cout << endl;
+	REP(i, 100){
+		cout << " " << g[i];
+	}
 	scanf("%d", &t);
 	REP(tc, t){
-		scanf("%d", &n);
-		printf("%d\n", a[n] % n);
+
 	}
 	return 0;
 }
-//Solved
