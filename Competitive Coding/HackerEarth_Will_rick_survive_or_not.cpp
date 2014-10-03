@@ -1,14 +1,12 @@
-
-//http://www.hackerearth.com/problem/algorithm/will-rick-survive-or-not-2/
-
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <vector>
-#include <iostream>
+#include <time.h>
 #include <algorithm>
 #include <cstdio>
+#include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -22,38 +20,38 @@ using namespace std;
 #define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
 #define MOD 1000000007
-
 #define gc getchar_unlocked
 
-void scanint(int &x)
-{
+void scanint(ll int &x){
 	register int c = gc();
 	x = 0;
 	for (; (c<48 || c>57); c = gc());
 	for (; c>47 && c<58; c = gc()) { x = (x << 1) + (x << 3) + c - 48; }
 }
 
-
-
 int main(){
-	int t, n, i, j;
-	int a[100005];
-	scanf("%d", &t);
+
+	ll int f[10];
+	ll int t, n;
+	int i;
+	scanint(f[0]);
 	REP(tc, t){
-		scanf("%d", &n);
-		REP(i, n)
-			scanint(a[i]);
-		SORT(a, n);
-		for (i = 0, j = 0; i<n; i++, i % 6 ? 0 : j++){
-			if (a[i] - i - j <= 0)
-				break;
+		scanint(f[0]);
+		scanint(f[1]);
+		scanint(f[2]);
+		scanint(f[3]);
+		scanint(f[4]);
+		scanint(n);
+		if (n<5)
+			printf("%lld\n", f[n]);
+		else {
+			n -= 4;
+			i = 4;
+			while (i++, n--)
+				f[i % 10] = (f[(i - 1) % 10] + f[(i - 2) % 10] + f[(i - 3) % 10] + 2 * f[(i - 4) % 10] + f[(i - 5) % 10]) % MOD;
+			printf("%lld\n", f[--i % 10]);
 		}
-		if (i == n)
-			printf("Rick now go and save Carl and Judas\n");
-		else
-			printf("Goodbye Rick\n%d\n", i);
 	}
+	sp;
 	return 0;
 }
-
-//Solved 
