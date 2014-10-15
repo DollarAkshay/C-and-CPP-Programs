@@ -1,7 +1,8 @@
-#include <stdio.h>
+
 
 //https://www.hackerrank.com/contests/projecteuler/challenges/euler007
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
