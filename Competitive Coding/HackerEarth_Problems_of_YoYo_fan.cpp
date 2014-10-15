@@ -1,3 +1,6 @@
+
+//http://www.hackerearth.com/codexplod-1/algorithm/problems-of-yoyo-fan/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,12 +25,12 @@ using namespace std;
 #define MOD 1000000007
 #define gc getchar_unlocked
 
+int ans[5];
 
-
-int isPrimeFib(ll int x){
+int isPrime(ll int x){
 	if (x<2)
 		return 0;
-	else if (x == 2 || x == 4)
+	else if (x == 2)
 		return 1;
 	int lim = sqrt(x);
 	FOR(i, 2, lim)
@@ -38,23 +41,36 @@ int isPrimeFib(ll int x){
 
 int main(){
 
-	ll int t, n, c;
+	ans[0] = 0;
+	ans[1] = 2;
+	ans[2] = 2;
+	ans[3] = 3;
+	ans[4] = 3;
+
+	ll int t, n, c, i, lim;
 	scanf("%lld", &t);
 	REP(tc, t){
 		c = 0;
 		scanf("%lld", &n);
-		int lim = sqrt(n);
-		FOR(i, 1, lim){
-			if (n%i == 0){
-				c++;
-				if (n / i>lim)
+		assert(n >= 1 && n <= 1000000000000);
+		if (n<5)
+			c = ans[n];
+		else{
+			lim = sqrt(n);
+			for (i = 1; i <= lim; i++){
+				if (n%i == 0){
 					c++;
+					if (n / i>lim)
+						c++;
+				}
+				else if (i == 2){
+					c++;
+				}
 			}
 		}
-		if (c == 2)
-			c++;
 		printf("%lld\n", c);
 	}
-	sp;
 	return 0;
 }
+
+//Solved

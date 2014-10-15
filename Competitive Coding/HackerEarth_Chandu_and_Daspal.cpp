@@ -1,3 +1,6 @@
+
+//http://www.hackerearth.com/codexplod-1/algorithm/chandu-and-daspal/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -22,39 +25,40 @@ using namespace std;
 #define MOD 1000000007
 #define gc getchar_unlocked
 
+int last[256];
 
-
-int isPrimeFib(ll int x){
-	if (x<2)
-		return 0;
-	else if (x == 2 || x == 4)
-		return 1;
-	int lim = sqrt(x);
-	FOR(i, 2, lim)
-	if (x%i == 0)
-		return 0;
-	return 1;
+void reset(){
+	REP(i, 256)
+		last[i] = -1;
 }
 
 int main(){
 
-	ll int t, n, c;
-	scanf("%lld", &t);
+	int t;
+	ll int ans;
+	char x, str[1000000];
+	scanf("%d", &t);
 	REP(tc, t){
-		c = 0;
-		scanf("%lld", &n);
-		int lim = sqrt(n);
-		FOR(i, 1, lim){
-			if (n%i == 0){
-				c++;
-				if (n / i>lim)
-					c++;
+		ans = 0;
+		scanf("%c%s", &x, str);
+		int len = strlen(str);
+		reset();
+		REP(i, len){
+			char c = str[i];
+			if (last[c] == -1)
+				last[c] = i;
+			else{
+				int n = i - last[c];
+				ll int p = 1;
+				while (n--) p = (p * 2) % MOD;
+				ans = (ans + p) % MOD;
+				last[c] = i;
 			}
 		}
-		if (c == 2)
-			c++;
-		printf("%lld\n", c);
+		printf("%lld\n", ans);
+
 	}
-	sp;
 	return 0;
 }
+
+//Solved
