@@ -17,17 +17,13 @@ public: loc(){}
 		friend loc operator+(loc l1,loc l2){
 			loc temp;
 			temp.lat = l1.lat + l2.lat;
-
-			
-			cout << "Left lat = "<<l1.lat<<endl;
-			
-			
 			temp.lon = l1.lon + l2.lon;
 			return temp;
 		}
-	void show(){
-		cout << lat << " " << lon<<endl;
-	}
+
+		void show(){
+			cout << lat << " " << lon<<endl;
+		}
 };
 
 int main(){
@@ -40,6 +36,16 @@ int main(){
 	_getch();
 	return 0;
 }
+
+/*
+
+Output :
+-----------------
+10 20
+5 30
+15 50
+
+*/
 
 
 
