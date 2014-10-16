@@ -25,10 +25,10 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
-#define MAX 10000001
+#define MAX 1000001
 
 char primes[MAX];
-ll a[700000];
+ll a[7000];
 
 void siev(){
 	MS1(primes);

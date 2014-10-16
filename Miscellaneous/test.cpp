@@ -1,19 +1,11 @@
-//Debugging Akshay Pai's Code
-
-#include<stdio.h> 
-#include<conio.h>
-#include <string>
-#include <iostream>
-
-using namespace std;
-
-int compare(const void * a, const void * b)
+#include <stdio.h>
+#include <stdlib.h>
+int main()
 {
-	return (*(int*)b - *(int*)a);
-}
-
-int main(){
-
-
-
+	int x = 1, y = 2;
+	if (x && y == 1)
+		printf("Code4Maaya is amazing!\n");
+	else
+		printf("Maya is fun this year!\n");
+	system("pause");
 }
