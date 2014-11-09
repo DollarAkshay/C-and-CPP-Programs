@@ -326,11 +326,13 @@ void main(){
 	int change, finish = 0;
 
 start:
+	srand(1995);
 	createNewGame();
 	generateNumber(NULL);
 	char c = _getch();
 
 	while (c != 'x'){
+		change = 0;
 		if (c == 'w')
 			change = up();
 		else if (c == 's')
@@ -344,6 +346,7 @@ start:
 			finish = generateNumber(c);
 		else
 			printf("\nINVALID");
+
 		if (finish)
 			c = 'x';
 		else
