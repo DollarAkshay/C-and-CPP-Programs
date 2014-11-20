@@ -1,4 +1,10 @@
-//http://www.codechef.com/MTRX2014/problems/DATE
+/*~~~~~~~~~~~~~~~~~~*
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
+
+//http://www.hackerearth.com/problem/algorithm/friendless-dr-sheldon-cooper-14/description/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -28,32 +34,21 @@ using namespace std;
 #define gc getchar_unlocked
 struct Edge{ int v, w; };
 
-int year[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-int leap[] = { 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+vector<int> graph[1000];
+
 
 int main(){
 
-	int t, d, m, y, l;
+	int t, n,c,s,e;
 	scanf("%d", &t);
 	REP(tc, t){
-		scanf("%d/%d/%d", &d, &m, &y);
-		l = y % 4 == 0 && (y % 100 != 0 || y % 400 == 0) ? 1 : 0;
-		if (m > 12 || d >(l ? leap[m - 1] : year[m - 1]))
-			puts("Invalid Date\n");
-		else{
-			d++;
-			if (d >(l ? leap[m - 1] : year[m - 1])){
-				d = 1;
-				m++;
-				if (m>12){
-					m = 1;
-					y++;
-				}
-			}
-			printf("%d/%d/%d\n", d, m, y);
+		scanf("%d%d", &n,&c);
+		REP(i, c){
+			scanf("%d%d", &s, &e);
 		}
+		cout << n - 1<<endl;
 	}
 	return 0;
 }
 
-// Solved
+//Solved
