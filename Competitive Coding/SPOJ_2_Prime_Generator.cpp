@@ -1,5 +1,5 @@
 
-//http://www.spoj.com/problems/PRIME1/
+//http://www.spoj.com/problems/PRIME1
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -26,46 +26,57 @@ using namespace std;
 #define gc getchar
 #define MAX 1000000000
 
+int sq1 = sqrt(MAX);
+int sq2 = sqrt(sq1);
 
-char primes[MAX];
+char prime[MAX+5];
+
 
 void seiv(){
-	MS1(primes);
-	long int i, j;
-	primes[0] = primes[1] = 0;
-	int lim = sqrt(MAX);
-	for (i = 2; i<=lim; i++){
-		if (primes[i]){
-			for (j = i*i; j<MAX; j += i){
-				if (primes[j])
-					primes[j] = 0;
+
+	MS1(prime);
+	ll int i, j;
+	prime[0] = prime[1] = 0;
+
+	for (i = 2; i<=sq2; i++){
+		if (prime[i]){
+			for (j = i*i; j<=sq1; j += i){
+				if (prime[j])
+					prime[j] = 0;
 			}
 		}
 	}
-	cout << "done";
 }
 
-void scanint(ll int &x){
-	register int c = gc();
-	x = 0;
-	for (; (c<48 || c>57); c = gc());
-	for (; c>47 && c<58; c = gc()) { x = (x << 1) + (x << 3) + c - 48; }
+void segmentedSeiv(int a, int b){
+
+	int lim = sqrt(b);
+	int i, j;
+	for (i = 2; i <= lim; i++){
+		if (prime[i]){
+			for (j = a - a%i; j <= b; j += i)
+				if (j>=a && prime[j] && j!=i)
+					prime[j] = 0;
+		}
+	}
+
 }
 
 int main(){
 
 	seiv();
-	ll int t, n,m;
-	scanf("%lld", &t);
+	int t, n,m;
+	scanf("%d", &t);
 	REP(tc, t){
-		scanint(m);
-		scanint(n);
+		scanf("%d%d", &m, &n);
+		if (n>sq2)
+			segmentedSeiv(m, n);
 		FOR(i,m,n)
-			if (primes[i])
-				printf("%lld\n", i);
-			printf("\n");
+			if (prime[i])
+				printf("%d\n", i);
+		printf("\n");
 	}
 	return 0;
 }
 
-// Not Solved ~ TLE
+// Solved :D So happy
