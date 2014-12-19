@@ -155,9 +155,11 @@ void miniMax(){
 			}
 		}
 	}
+	printf("The score of this move is %d\n", max);
 }
 
 int main(){
+
 	cin >> player;
 	cin >> Board[0] >> Board[1] >> Board[2];
 	REP(i, 3) REP(j, 3) if (Board[i][j] != '_') turn++;
