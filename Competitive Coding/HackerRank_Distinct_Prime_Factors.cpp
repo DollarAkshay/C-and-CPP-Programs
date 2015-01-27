@@ -63,6 +63,7 @@ void seiv(){
 
 int main(){
 	seiv();
+	cout << "End";
 	ll int t, n;
 	scanf("%lld", &t);
 	REP(tc, t){
