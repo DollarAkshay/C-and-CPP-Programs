@@ -1,3 +1,11 @@
+/*~~~~~~~~~~~~~~~~~~*
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
+
+//
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -26,14 +34,31 @@ using namespace std;
 #define gc getchar_unlocked
 struct Edge{ int v, w; };
 
-void main(){
+int main(){
 
-	FILE *fp = fopen("data.txt", "w");
-	int a[8] = { 1, 3, 5, 7, 9, 11, 13, 15 };
-	REP(i, 8) REP(j, 8) REP(k, 8) REP(l, 8) REP(m, 8){
-		int sum = a[i] + a[j] + a[k] + a[l] + a[m];
-		fprintf(fp,"%d + %d + %d + %d + %d  = %d\n", a[i], a[j], a[k], a[l], a[m], sum);
+	int a[500], b[500], c[500], d[500];
+	int q, n;
+	scanf("%d%d",&n, &q);
+	REP(i, n) scanf("%d", &a[i]);
+	REP(i, n) scanf("%d", &b[i]);
+
+	REP(i, q){
+		REP(j, n){
+			c[j] = a[j];
+			d[j] = b[j];
+		}
+		int l, r;
+		scanf("%d%d", &l, &r);
+		l--;
+		sort(begin(c) + l, begin(c) + r);
+		sort(begin(d) + l, begin(d) + r);
+		ll int res = 0;
+		r--;
+		FOR(j, l, r) res += c[j] * d[j];
+		printf("%lld\n", res);
 	}
-	fclose(fp);
-	sp;
+	
+	return 0;
 }
+
+//Solved
