@@ -1,8 +1,8 @@
 /*~~~~~~~~~~~~~~~~~~*
-*                  *
-* $Dollar Akshay$  *
-*                  *
-*~~~~~~~~~~~~~~~~~~*/
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
 
 //http://www.hackerearth.com/mindsweeper3/algorithm/tanya-and-bomberman/
 
@@ -34,19 +34,46 @@ using namespace std;
 #define gc getchar_unlocked
 struct Edge{ int v, w; };
 
-ll int x[100000], y[100000];
+vector<pair<ll int,ll int>> x, y;
 
 int main(){
 
-	ll int t, k, p;
+	ll int t, k, p,xn,yn;
 	scanf("%lld", &t);
 	REP(tc, t){
-		scanf("%lld%lld", &k, &p);
-		REP(i, p)
-			scanf("%lld%lld", &x[i], &y[i]);
-		SORT(x, p);
-		SORT(y, p);
-		ll int cx = 0, cy = 0;
+		scanf("%lld%lld",&k,&p);
+		REP(i, p){
+			scanf("%lld%lld", &xn, &yn);
+			int found = 0;
+			REP(j, x.size()){
+				if (x[j].second == xn){
+					found = 1;
+					x[j].first++;
+					break;
+				}
+			}
+			if (!found){
+				x.push_back(make_pair(1,xn));
+			}
+
+			found = 0;
+			REP(j, y.size()){
+				if (y[j].second == yn){
+					found = 1;
+					y[j].first++;
+					break;
+				}
+			}
+			if (!found){
+				y.push_back(make_pair(1,yn));
+			}
+		}
+		SORT(x, x.size());
+		SORT(y, y.size());
+		int c=0;
+		for (int i = 0, j = 0; i<x.size() && j<y.size())
+
+		ll int cx=0, cy=0;
 		REP(i, p){
 			if (!i || x[i] != x[i - 1]){
 				cx++;
@@ -65,4 +92,4 @@ int main(){
 	return 0;
 }
 
-//Not Solved
+//
