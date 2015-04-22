@@ -22,13 +22,13 @@ float Knapsack(item a[MAX], int m,int n){
 	float profit = 0;
 
 	sort(a, a + n, compare);
-	for (int i = 0; m; i++){
-		if (a[i].w >= m){
+	for (int i = 0; m && i<n; i++){
+		if (a[i].w <= m){
 			m -= a[i].w;
 			profit += a[i].p;
 		}
 		else{
-			profit = a[i].p * ((float)m/a[i].w);
+			profit += a[i].p * ((float)m/a[i].w);
 			m = 0;
 		}
 	}
@@ -43,13 +43,15 @@ int main(){
 	cout << "Enter no. of items : ";
 	cin >> n;
 
-	cout << "Enter profit of each item";
+	cout << "Enter profit of each item :\n";
 	for (i = 0; i < n; i++)
 		cin >> a[i].p;
 
-	cout << "Enter weight of each item";
-	for (i = 0; i < n; i++)
+	cout << "Enter weight of each item :\n";
+	for (i = 0; i < n; i++){
 		cin >> a[i].w;
+		a[i].ratio = (float)a[i].p / a[i].w;
+	}
 
 	cout << "Enter total capacity : ";
 	cin >> m;
