@@ -61,3 +61,15 @@ int main(){
 	_getch();
 	return 0;
 }
+
+/*
+OUTPUT :
+--------
+Enter no. of items : 5
+Enter profit of each item :
+20 30 66 40 60
+Enter weight of each item :
+10 20 30 40 50
+Enter total capacity : 100
+The maximum profit is : 164
+*/
