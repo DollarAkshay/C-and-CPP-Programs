@@ -72,4 +72,5 @@ Enter weight of each item :
 10 20 30 40 50
 Enter total capacity : 100
 The maximum profit is : 164
+
 */
