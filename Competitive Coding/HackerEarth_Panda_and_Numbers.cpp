@@ -34,59 +34,18 @@ using namespace std;
 #define gc getchar_unlocked
 struct Edge{ int v, w; };
 
-vector<int> pand;
-
-int p[11];
-
-int ispand[1000000];
-
-int caclPand(int x){
-
-	if (x < -1)
-		return 0;
-	if (x == 0)
-		return 0;
-	REP(i, 10){
-		if (x == p[i])
-			return 1;
-	}
-
-	int lim = log10(x) + 1;
-	REP(i, lim){
-		int div = pow(10,i);
-		int dig = x / div % 10;
-		int n = x - dig*dig;
-		if (dig && caclPand(n))
-			return 1;
-	}
-	return 0;
-}
-
-void pre(){
-
-	REP(i, 11)
-		p[i] = pow(i-1, i-1);
-	
-
-	FOR(i, 0, 50000){
-		if (caclPand(i))
-			ispand[i] = 1;
-		else
-			pand.push_back(i);
-	}
-
-	cout << "Done";
-}
-
 int main(){
 
-	pre();
 	int t, n;
 	scanf("%d", &t);
 	REP(tc, t){
 		scanf("%d", &n);
+		if ((n == 90 || n == 91 || n <= 12) && n != 1 && n != 4)
+			puts("No");
+		else
+			puts("Yes");
 	}
 	return 0;
 }
 
-//Brute Force Testing ~ Dosent Work
+//Solved

@@ -44,9 +44,10 @@ int main(){
 			printf("%lld\n", n);
 		else{
 			ll int ans = 0;
-			double lgm = log(m);
 			while (n >= m){
-				ll int x = pow(m, floor(log(n) / lgm));
+				ll int x = 1;
+				while (x*m <= n)
+					x *= m;
 				ans += n / x;
 				n %= x;
 			}
