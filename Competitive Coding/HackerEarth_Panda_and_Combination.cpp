@@ -44,14 +44,13 @@ int main(){
 			printf("%lld\n", n);
 		else{
 			ll int ans = 0;
-			while (n >= m){
+			while (n){
 				ll int x = 1;
 				while (x*m <= n)
 					x *= m;
 				ans += n / x;
 				n %= x;
 			}
-			ans += n;
 			printf("%lld\n", ans);
 		}
 	}
