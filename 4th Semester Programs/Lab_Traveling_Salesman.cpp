@@ -1,5 +1,4 @@
 #include<iostream>
-#include<algorithm>
 #include<stdio.h>
 #include<conio.h>
 using namespace std;
@@ -28,11 +27,9 @@ void tsprec(int curtour[], int u, int k, int cost){
 
 }
 
-int tspnn(int c[][max], int tour[], int start, int n){
+int tspnn(int tour[], int start, int n){
 
 	int cost = 0, i, k = 0;
-	for (i = 0; i < n; i++)
-		v[i] = 0;
 	tour[k] = start;
 	v[start] = 1;
 	while (k<n - 1){
@@ -58,15 +55,14 @@ int main(){
 	int curtour[max], aproxcost;
 
 	cout<<"Travelling Salesman Problem using Brute-Force and Nearest-Neighbour approximation algorithms\n";
-	cout<<"\nEnter number of cities to traverse : ";
+	cout<<"\nEnter number of cities : ";
 	cin>>n;
-	cout<<"Enter cost matrix\n"<<endl;
+	cout<<"Enter cost matrix :\n"<<endl;
 
 	for(i=0;i<n;i++){
 		for(j=0;j<n;j++){
 			cin>>c[i][j];
-			if(c[i][j]==0)
-				c[i][j]=999;
+			c[i][j] = c[i][j] == 0 ? infinity : c[i][j];
 		}
 	}
 
@@ -79,7 +75,7 @@ int main(){
 	_getch();
 
 	
-	aproxcost = tspnn(c, curtour, 0, n);
+	aproxcost = tspnn(curtour, 0, n);
 	cout << "\nMinimum cost using Nearest Neighbour : " << aproxcost << endl;
 	cout<<"Tour : ";
 	for(i=0;i<n;i++)
@@ -87,7 +83,7 @@ int main(){
 	cout<<"0\n";
 	
 	double relative_err=(double)(aproxcost-optimal)/optimal;
-	cout<<"The relative error = "<<relative_err<<endl;
+	cout<<"\nThe relative error : "<<relative_err<<endl;
 	
 	_getch();
 	return 0;
