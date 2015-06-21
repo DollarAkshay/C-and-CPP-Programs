@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerearth.com/codestellar-3/algorithm/archith-and-roman/
+//https://www.hackerearth.com/problem/algorithm/archith-and-roman/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -32,54 +32,47 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
+char symb[] = { 'I', 'V', 'X', 'L', 'C', 'D', 'M' };
+
+void roman(int n){
+
+	int len, dig, power;
+	while (n >= 1000)
+		printf("M", n -= 1000);
+
+	while (n>0){
+
+
+		len = log10(n) + 1;
+		power = pow(10, len - 1);
+		dig = n / power;
+		if (dig == 9){
+			printf("%c%c", symb[len * 2 - 2], symb[len * 2]);
+			n -= 9 * power;
+		}
+		else if (dig >= 5){
+			printf("%c", symb[len * 2 - 1]);
+			n -= 5 * power;
+		}
+		else if (dig == 4){
+			printf("%c%c", symb[len * 2 - 2], symb[len * 2 - 1]);
+			n -= 4 * power;
+		}
+		else if (dig >= 1){
+			printf("%c", symb[len * 2 - 2]);
+			n -= 1 * power;
+		}
+	}
+}
+
+
 int main(){
 
 	int t, n;
 	scanf("%d", &t);
 	REP(tc, t){
 		scanf("%d", &n);
-		while (n){
-			if (n == 100){
-				printf("C");
-				n -= 100;
-			}
-			else if (n >= 90){
-				printf("XC");
-				n -= 90;
-			}
-			else if (n >= 50){
-				printf("L");
-				n -= 50;
-			}
-			else if (n >= 40){
-				printf("XL");
-				n -= 40;
-			}
-			else if (n >= 10){
-				while (n >= 10){
-					printf("X");
-					n -= 10;
-				}
-			}
-			else if (n == 9){
-				printf("IX");
-				n -= 9;
-			}
-			else if (n >= 5){
-				printf("V");
-				n -= 5;
-			}
-			else if (n == 4){
-				printf("IV");
-				n -= 4;
-			}
-			else {
-				while (n){
-					printf("I");
-					n--;
-				}
-			}
-		}
+		roman(n);
 		printf("\n");
 	}
 	return 0;
