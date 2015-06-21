@@ -41,8 +41,6 @@ void roman(int n){
 		printf("M", n -= 1000);
 
 	while (n>0){
-
-
 		len = log10(n) + 1;
 		power = pow(10, len - 1);
 		dig = n / power;
