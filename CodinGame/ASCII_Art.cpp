@@ -1,8 +1,8 @@
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
 //https://www.codingame.com/ide/1483363301804d9f7c33bf6d832c6a908f3c507
 
@@ -36,14 +36,15 @@ struct point{
 	int x, y;
 };
 
-char ascii[30][810];
+char ascii[300][8100];
 
 int main(){
 
-	int w, h,len;
+	int w, h, len;
 	char s[1000];
 	scanf("%d%d", &w, &h);
-	scanf("%s", s);
+	getchar();
+	scanf("%[^\n]s", s);
 	getchar();
 	REP(i, h){
 		scanf("%[^\n]s", ascii[i]);
@@ -61,7 +62,7 @@ int main(){
 	REP(i, h){
 		REP(j, len){
 			REP(k, w)
-				printf("%c", ascii[i][(s[j]-'A')*w + k]);
+				printf("%c", ascii[i][(s[j] - 'A')*w + k]);
 		}
 		printf("\n");
 	}
@@ -69,4 +70,4 @@ int main(){
 	return 0;
 }
 
-//
+//Solved
