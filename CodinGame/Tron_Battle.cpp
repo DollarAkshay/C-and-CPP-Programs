@@ -49,6 +49,7 @@ int board[22][32];
 const int MAX_DEPTH = 50;
 int n, me, x, y;
 bool removed[5];
+bool includeTail[5];
 point p[5];
 point dir[4] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
 
@@ -229,11 +230,15 @@ int main(){
 			scanf("%d %d %d %d", &x, &y, &p[i].x, &p[i].y);
 			if (x == -1)
 				removePlayer(i);
+			else if (includeTail[i] == 0){
+				board[y+1][x+1] = i;
+				includeTail[i] = 1;
+			}
 			p[i].x++;
 			p[i].y++;
 		}
 		updateBoard();
-		debug(1, 1, 1);
+		debug(0, 1, 0);
 		string move = getMove();
 		printMove(move);
 		t = clock() - t;
