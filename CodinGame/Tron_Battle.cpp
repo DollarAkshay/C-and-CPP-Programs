@@ -38,6 +38,7 @@ struct point{
 
 char board[22][32];
 int n, me, x, y;
+bool removed[5];
 point p[5];
 
 void debug(bool DBpos, bool DBboard, bool DBenemy){
@@ -103,7 +104,7 @@ string randomMove(){
 	int size = possibleMoves.size();
 
 	if (size == 0)
-		return{ -1, -1 };
+		return "INVALID";
 	else
 		return possibleMoves[rand()%size];
 
@@ -111,8 +112,21 @@ string randomMove(){
 }
 
 void printMove(string s){
-
 	printf("%s\n",s.c_str());
+}
+
+void removePlayer(int p){
+
+	if (removed[p] == 1)
+		return;
+
+	REP(i, 22){
+		REP(j, 32)
+			if (board[i][j] == p)
+				board[i][j] = 0;
+	}
+	removed[p] = 1;
+
 }
 
 int main(){
@@ -125,6 +139,10 @@ int main(){
 		FOR(i, 1, n){
 			int x, y;
 			scanf("%d %d %d %d", &x, &y, &p[i].x, &p[i].y);
+			if (x == -1)
+				removePlayer(i);
+			p[i].x++;
+			p[i].y++;
 		}
 		updateBoard();
 		debug(1, 0, 1);
