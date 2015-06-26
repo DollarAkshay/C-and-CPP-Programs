@@ -34,12 +34,24 @@ using namespace std;
 
 struct point{
 	int x, y;
+	point(){
+		x = 0;
+		y = 0;
+	}
+	point(int px,int py){
+		x = px;
+		y = py;
+	}
 };
 
-char board[22][32];
+clock_t t;
+int board[22][32];
+const int MAX_DEPTH = 50;
 int n, me, x, y;
 bool removed[5];
 point p[5];
+point dir[4] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+
 
 void debug(bool DBpos, bool DBboard, bool DBenemy){
 
@@ -111,6 +123,82 @@ string randomMove(){
 
 }
 
+int evaluateBoard(){
+	
+	int openSpace = 0;
+	int board_copy[22][32];
+	REP(i, 22)
+		memcpy(board_copy[i], board[i],32*sizeof(board[i][0]));
+
+	queue<pair<point,int>> q;
+	pair<point,int> u;
+	board_copy[y][x] = 1;
+	q.push(make_pair(point(x, y), 1));
+
+	while (!q.empty()){
+		u = q.front();
+		q.pop();
+		REP(i, 4){
+			int ty = u.first.y + dir[i].y, tx = u.first.x + dir[i].x;
+			if (board_copy[ty][tx] == 0 && u.second<MAX_DEPTH){
+				q.push(make_pair(point(tx, ty), u.second+1));
+				board_copy[ty][tx] = 1;
+				openSpace++;
+			}
+		}
+	}
+	return openSpace;
+}
+
+string getMove(){
+	
+	pair<string, int> score;
+	score.first = "Haters,gonna HATE HATE HATE HATE baby... :)";
+	score.second = 0;
+	if (board[y][x + 1] == 0){
+		board[y][++x] = me;
+		int val = evaluateBoard();
+		DB("Right has a score of %d\n", val);
+		if (val > score.second){
+			score.second = val;
+			score.first = "RIGHT";
+		}
+		board[y][x--] = 0;
+	}
+	if (board[y][x - 1] == 0){
+		board[y][--x] = me;
+		int val = evaluateBoard();
+		DB("Left has a score of %d\n", val);
+		if (val > score.second){
+			score.second = val;
+			score.first = "LEFT";
+		}
+		board[y][x++] = 0;
+	}
+	if (board[y + 1][x] == 0){
+		board[++y][x] = me;
+		int val = evaluateBoard();
+		DB("Down has a score of %d\n", val);
+		if (val > score.second){
+			score.second = val;
+			score.first = "DOWN";
+		}
+		board[y--][x] = 0;
+	}
+	if (board[y - 1][x] == 0){
+		board[--y][x] = me;
+		int val = evaluateBoard();
+		DB("Up has a score of %d\n", val);
+		if (val > score.second){
+			score.second = val;
+			score.first = "UP";
+		}
+		board[y++][x] = 0;
+	}
+
+	return score.first;
+}
+
 void printMove(string s){
 	printf("%s\n",s.c_str());
 }
@@ -132,8 +220,8 @@ void removePlayer(int p){
 int main(){
 
 	init();
-
 	while (1){
+		t = clock();
 		scanf("%d %d", &n, &me);
 		me++;
 		FOR(i, 1, n){
@@ -145,9 +233,11 @@ int main(){
 			p[i].y++;
 		}
 		updateBoard();
-		debug(1, 0, 1);
-		string move = randomMove();
+		debug(1, 1, 1);
+		string move = getMove();
 		printMove(move);
+		t = clock() - t;
+		DB("Time per round = %f ms \n", (float)t*100 / CLOCKS_PER_SEC);
 	}
 
 	return 0;
