@@ -1,4 +1,4 @@
-/*~~~~~~~~~~~~~~~~~~*
+﻿/*~~~~~~~~~~~~~~~~~~*
  *                  *
  * $Dollar Akshay$  *
  *                  *
@@ -126,40 +126,56 @@ string randomMove(){
 
 int evaluateBoard(){
 	
-	int openSpace = 0;
+	int openSpace[5] = { -1, -1, -1, -1, -1};
 	int board_copy[22][32];
 	REP(i, 22)
 		memcpy(board_copy[i], board[i],32*sizeof(board[i][0]));
 
 	queue<pair<point,int>> q;
 	pair<point,int> u;
-	board_copy[y][x] = 1;
-	q.push(make_pair(point(x, y), 1));
+	board_copy[y][x] = me+16;
+	openSpace[me] = 0;
+
+	FOR(i, me + 1, n){
+		if (!removed[i])
+			q.push(make_pair(point(p[i].x, p[i].y), i));
+	}
+	FOR(i, 1, me - 1){
+		if (!removed[i])
+			q.push(make_pair(point(p[i].x, p[i].y), i));
+	}
+	q.push(make_pair(point(x,y), me));
 
 	while (!q.empty()){
 		u = q.front();
+		openSpace[u.second]++;
 		q.pop();
 		REP(i, 4){
 			int ty = u.first.y + dir[i].y, tx = u.first.x + dir[i].x;
-			if (board_copy[ty][tx] == 0 && u.second<MAX_DEPTH){
-				q.push(make_pair(point(tx, ty), u.second+1));
-				board_copy[ty][tx] = 1;
-				openSpace++;
+			if (board_copy[ty][tx] == 0){
+				q.push(make_pair(point(tx,ty), u.second));
+				board_copy[ty][tx] = u.second+16;
 			}
 		}
 	}
-	return openSpace;
+
+	int val = 0;
+	FOR(i, 1, n)
+		val -= openSpace[i];
+	val += 2 * openSpace[me];
+	return val;
 }
 
 string getMove(){
 	
 	pair<string, int> score;
-	score.first = "Haters,gonna HATE HATE HATE HATE baby... :)";
-	score.second = 0;
+	
+	score.first = "(╯°□°)╯︵ ┻━┻";
+	score.second = -6000;
 	if (board[y][x + 1] == 0){
 		board[y][++x] = me;
 		int val = evaluateBoard();
-		DB("Right has a score of %d\n", val);
+		//DB("Right has a score of %d\n", val);
 		if (val > score.second){
 			score.second = val;
 			score.first = "RIGHT";
@@ -169,7 +185,7 @@ string getMove(){
 	if (board[y][x - 1] == 0){
 		board[y][--x] = me;
 		int val = evaluateBoard();
-		DB("Left has a score of %d\n", val);
+		//DB("Left has a score of %d\n", val);
 		if (val > score.second){
 			score.second = val;
 			score.first = "LEFT";
@@ -179,7 +195,7 @@ string getMove(){
 	if (board[y + 1][x] == 0){
 		board[++y][x] = me;
 		int val = evaluateBoard();
-		DB("Down has a score of %d\n", val);
+		//DB("Down has a score of %d\n", val);
 		if (val > score.second){
 			score.second = val;
 			score.first = "DOWN";
@@ -189,7 +205,7 @@ string getMove(){
 	if (board[y - 1][x] == 0){
 		board[--y][x] = me;
 		int val = evaluateBoard();
-		DB("Up has a score of %d\n", val);
+		//DB("Up has a score of %d\n", val);
 		if (val > score.second){
 			score.second = val;
 			score.first = "UP";
@@ -201,6 +217,8 @@ string getMove(){
 }
 
 void printMove(string s){
+	if (s[0] == '(')
+		DB("FOR THE WATCH (╯°○°)>=[:::::>\n", 0);
 	printf("%s\n",s.c_str());
 }
 
@@ -238,7 +256,7 @@ int main(){
 			p[i].y++;
 		}
 		updateBoard();
-		debug(0, 1, 0);
+		debug(0, 0, 0);
 		string move = getMove();
 		printMove(move);
 		t = clock() - t;
