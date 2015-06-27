@@ -1,24 +1,27 @@
 /*~~~~~~~~~~~~~~~~~~*
-*                  *
-* $Dollar Akshay$  *
-*                  *
-*~~~~~~~~~~~~~~~~~~*/
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerearth.com/problem/algorithm/monk-and-his-friends/
+//
 
-#include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
+#include <stdio.h>
 #include <ctype.h>
 #include <time.h>
-#include <assert.h>
+#include <math.h>
 #include <algorithm>
 #include <iostream>
+#include <string>
+#include <vector>
 #include <queue>
 #include <stack>
-#include <vector>
 #include <map>
+#include <set>
+
 using namespace std;
 
 #define sp system("pause")
@@ -34,20 +37,10 @@ using namespace std;
 
 int main(){
 
-	ll int t, n, m, x;
-	map<ll int,ll int> ma;
-	scanf("%lld", &t);
+	int t, n;
+	scanf("%d", &t);
 	REP(tc, t){
-		scanf("%lld%lld", &n, &m);
-		REP(i, n + m){
-			scanf("%lld", &x);
-			int c = ma.count(x);
-			if (c == 0)
-				ma[x] = i;
-			if (i >= n)
-				puts(c == 0 ? "NO" : "YES");
-		}
-		ma.clear();
+		scanf("%d", &n);
 	}
 	return 0;
 }
