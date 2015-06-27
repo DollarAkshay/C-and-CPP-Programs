@@ -34,9 +34,10 @@ using namespace std;
 #define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
 #define MOD 1000000007
-struct point{
-	int x, y;
-};
+
+const bool testing = 0;
+int score = 0;
+
 
 char a[27] = { ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 char s[1000],rune[30];
@@ -48,6 +49,7 @@ int pos[255];
 void init(){
 
 	x = 0;
+	brainfuck.clear();
 	REP(i, 27)
 		pos[a[i]] = i;
 	REP(i, 30)
@@ -124,11 +126,9 @@ void printLetter(int off, int diff){
 pair<int,int> findRune(char s){
 
 	int offset, diff;
-	offset = 0;
-	diff = charDiff(rune[x], s);
-	int min = offset + abs(diff);
+	int min = 100;
 
-	for (int i = 0, j = 0; i<=15 ;i++,j--){
+	for (int i = 15, j = -15; i>=0 ;i--,j++){
 		
 		int opi = charDiff(rune[idMOD(x, 30, i)], s);
 		if (abs(opi) + abs(i) < min){
@@ -151,46 +151,68 @@ pair<int,int> findRune(char s){
 
 int main(){
 
-	init();
-	scanf("%[^\n]s", s);
-	DB("String is \"%s\"\n", s);
-	len = strlen(s);
-	REP(i, len){
-		pair<int, int> p = findRune(s[i]);
-		printLetter(p.first, p.second);
+	int tc = testing ? 24 : 1;
+	FILE *f = fopen("testcase.txt", "r");
+	FILE *fout = fopen("out2.txt", "w");
+
+
+	REP(t, tc){
+		init();
+		if (testing){
+			fscanf(f, "%[^\n]s", s);
+			fgetc(f);
+		}
+		else
+			scanf("%[^\n]s", s);
+		DB("The String is \"%s\"\n", s);
+		len = strlen(s);
+		REP(i, len){
+			pair<int, int> p = findRune(s[i]);
+			printLetter(p.first, p.second);
+		}
+		brainfuck.push_back('\n');
+		brainfuck.push_back(0);
+		score += brainfuck.size();
+		if (testing)
+			fprintf(fout,"Testcase : #%02d = %d\n", t+1, brainfuck.size());
+		else
+			DB("The length of the final string is %d\n", brainfuck.size());
+		printf("%s\n\n", brainfuck.c_str());
 	}
-	brainfuck.push_back('\n');
-	brainfuck.push_back(0);
-	DB("The length of the final string is %d", brainfuck.size());
-	printf("%s", brainfuck.c_str());
+	fprintf(fout, "You final score is %d\n\n", score);
+	DB("You final score is %d\n\n", score);
+	fclose(f);
+	fclose(fout);
+	sp;
 	return 0;
 }
 
 /*
-#01 = 7
-#02 = 37
-#03 = 145
-#04 = 29
-#05 = 33
-#06 = 25
-#07 = 34
-#08 = 94
-#09 = 241
-#10 = 107
-#11 = 74
-#12 = 227
-#13 = 357
-#14 = 722
-#15 = 306
-#16 = 44
-#17 = 597
-#18 = 236
-#19 = 128
-#20 = 323
-#21 = 291
-#22 = 284
-#23 = 280
-#24 = 1416
+Testcase : #01 = 7
+Testcase : #02 = 37
+Testcase : #03 = 152
+Testcase : #04 = 29
+Testcase : #05 = 33
+Testcase : #06 = 23
+Testcase : #07 = 34
+Testcase : #08 = 94
+Testcase : #09 = 193
+Testcase : #10 = 107
+Testcase : #11 = 74
+Testcase : #12 = 226
+Testcase : #13 = 358
+Testcase : #14 = 716
+Testcase : #15 = 294
+Testcase : #16 = 44
+Testcase : #17 = 597
+Testcase : #18 = 243
+Testcase : #19 = 128
+Testcase : #20 = 323
+Testcase : #21 = 291
+Testcase : #22 = 284
+Testcase : #23 = 243
+Testcase : #24 = 1438
+You final score is 5968
 
 
 */
