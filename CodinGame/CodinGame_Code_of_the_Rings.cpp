@@ -35,7 +35,7 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
-const bool testing = 0;
+const bool testing = 1;
 int score = 0;
 
 
@@ -55,6 +55,14 @@ void init(){
 	REP(i, 30)
 		rune[i] = ' ';
 
+}
+
+int posMOD(int n, int mod){
+
+	int x = n%mod;
+	if (x < 0)
+		x += mod;
+	return x;
 }
 
 int idMOD(int x,int mod,int dir){
@@ -98,7 +106,7 @@ int charDiff(char a, char b){
 		return c1;
 }
 
-void printLetter(int off, int diff){
+void printLetter(int off, int diff,int notloop){
 
 	if (off < 0){
 		REP(i, abs(off))
@@ -119,8 +127,9 @@ void printLetter(int off, int diff){
 			brainfuck.push_back('-');
 	}
 
-	rune[x] = a[idMOD(pos[rune[x]], 27, diff)];
-	brainfuck.push_back('.');
+	if (notloop)
+		rune[x] = a[idMOD(pos[rune[x]], 27, diff)];
+		
 }
 
 pair<int,int> findRune(char s){
@@ -149,11 +158,66 @@ pair<int,int> findRune(char s){
 	return make_pair(offset, diff);
 }
 
+int checkIncreasingSequence(int i){
+
+	int j = i, k = posMOD(pos[s[i+1]]-pos[s[i]],27);
+
+	if (k > 13)
+		return i;
+
+	while (s[j] && posMOD(pos[s[j + 1]] - pos[s[j]], 27) == k)
+		j++;
+	j++;
+	j -= i;
+	int aa = charDiff(rune[x], s[i]);
+	if (abs(aa) - 2 * j + 34 > j*k - k)
+		return i;
+	else{
+		if (j >= 26){
+			printLetter(0, aa, 1);
+			rune[x] = a[idMOD(pos[rune[x]], 27, 26*k)];
+			
+			printLetter(-1, 0, 0);
+			int zz = charDiff(rune[x], 'Z');
+			printLetter(0, zz, 0); // n = 26
+			rune[x] = ' ';
+			brainfuck.push_back('[');
+			printLetter(1, 0, 1);
+			brainfuck.push_back('.');
+			printLetter(0, k, 0);
+			printLetter(-1, 0, 0);
+			printLetter(0, -1, 0);
+			brainfuck.push_back(']');
+			printLetter(1, 0, 1);
+			return checkIncreasingSequence(i + 26);
+		}
+		else{
+			printLetter(0, aa, 0);
+			rune[x] = a[idMOD(pos[rune[x]], 27, abs(j)*k)];
+			printLetter(-1, 0, 0);
+			int zz = charDiff(rune[x], a[j]);
+			printLetter(0, zz, 0); // n = j
+			rune[x] = ' ';
+			brainfuck.push_back('[');
+			printLetter(1, 0, 1);
+			brainfuck.push_back('.');
+			printLetter(0, k, 0);
+			printLetter(-1, 0, 0);
+			printLetter(0, -1, 0);
+			brainfuck.push_back(']');
+			return i+j;
+		}
+
+	}
+
+}
+
 int main(){
+
 
 	int tc = testing ? 24 : 1;
 	FILE *f = fopen("testcase.txt", "r");
-	FILE *fout = fopen("out2.txt", "w");
+	FILE *fout = fopen("out3.txt", "w");
 
 
 	REP(t, tc){
@@ -166,9 +230,17 @@ int main(){
 			scanf("%[^\n]s", s);
 		DB("The String is \"%s\"\n", s);
 		len = strlen(s);
+
+
 		REP(i, len){
+			int new_i = checkIncreasingSequence(i);
+			if (new_i != i){
+				i = new_i-1;
+				continue;
+			}
 			pair<int, int> p = findRune(s[i]);
-			printLetter(p.first, p.second);
+			printLetter(p.first, p.second,1);
+			brainfuck.push_back('.');
 		}
 		brainfuck.push_back('\n');
 		brainfuck.push_back(0);
@@ -178,6 +250,9 @@ int main(){
 		else
 			DB("The length of the final string is %d\n", brainfuck.size());
 		printf("%s\n\n", brainfuck.c_str());
+	
+	
+	
 	}
 	fprintf(fout, "You final score is %d\n\n", score);
 	DB("You final score is %d\n\n", score);
