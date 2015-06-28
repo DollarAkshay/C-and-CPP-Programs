@@ -35,9 +35,8 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
-const bool testing = 1;
+const bool testing = 0;
 int score = 0;
-
 
 char a[27] = { ' ', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z' };
 char s[1000],rune[30];
@@ -212,12 +211,79 @@ int checkIncreasingSequence(int i){
 
 }
 
+int checkSubString(int nx){
+
+	
+	if (nx >= len)
+		return nx;
+
+	int j = 0,k;
+	string ss;
+	FOR(i, 2, min(20,len/4)){
+		string sub;
+		REP(mm, i)
+			sub.push_back(s[nx+mm]);
+		if (sub.size() == 0)
+			return nx;
+		j = 0;
+		while (!strncmp(sub.c_str(),s+nx+j*i, i)){
+			j++;
+		}
+		if (j >= 8){
+			ss = sub;
+			k = i;
+			break;
+		}
+	}
+	if (j < 8)
+		return nx;
+
+
+	REP(i, k){
+		int cd = charDiff(rune[x], ss[i]);
+		printLetter(0, cd, 1);
+		printLetter(1, 0, 1);
+	}
+	if (j >= 26){
+		printLetter(0, -1, 0);
+		brainfuck.push_back('[');
+		REP(i, k)
+			printLetter(-1, 0, 1);
+		REP(i, k){
+			brainfuck.push_back('.');
+			printLetter(1, 0, 1);
+		}
+		printLetter(0, -1, 0);
+		brainfuck.push_back(']');
+		REP(i, k)
+			printLetter(-1, 0, 1);
+		return checkSubString(nx + 26*k);
+	}
+	else{
+		int cd = charDiff(rune[x], a[j]);
+		printLetter(0, cd, 0);
+		brainfuck.push_back('[');
+		REP(i, k)
+			printLetter(-1, 0, 1);
+		REP(i, k){
+			brainfuck.push_back('.');
+			printLetter(1, 0, 1);
+		}
+		printLetter(0, -1, 0);
+		brainfuck.push_back(']');
+		return nx + j*k;
+	}
+
+	return 0;
+}
+
+
 int main(){
 
 
 	int tc = testing ? 24 : 1;
 	FILE *f = fopen("testcase.txt", "r");
-	FILE *fout = fopen("out3.txt", "w");
+	FILE *fout = fopen("out4.txt", "w");
 
 
 	REP(t, tc){
@@ -238,6 +304,12 @@ int main(){
 				i = new_i-1;
 				continue;
 			}
+			int new_i2 = checkSubString(i);
+			if (new_i2 != i){
+				i = new_i2 - 1;
+				continue;
+			}
+			
 			pair<int, int> p = findRune(s[i]);
 			printLetter(p.first, p.second,1);
 			brainfuck.push_back('.');
