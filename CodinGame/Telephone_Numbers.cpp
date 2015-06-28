@@ -42,25 +42,52 @@ struct node{
 };
 
 struct node* List;
+int ans = 0;
+
+void append(struct node* p, char * s){
+
+	while (s[0]){
+		p->next[s[0] - '0'] = new node();
+		ans++;
+		p = p->next[s[0] - '0'];
+		p->n = s[0] - '0';
+		REP(i, 10)
+			p->next[i] = NULL;
+		s = s + 1;
+	}
+
+
+}
 
 void addtoList(char s[100]){
 
-	struct node* curr;
+	struct node* curr = List;
 	int len = strlen(s);
 	REP(i, len){
-
+		if (curr && curr->next[s[i] - '0'])
+			curr = curr->next[s[i] - '0'];
+		else{
+			append(curr, s + i);
+			break;
+		}
+	
 	}
 
 }
 
 int main(){
 
+	List = new node();
+	REP(i, 10)
+		List->next[i] = NULL;
 	int n;
 	char s[100];
+	scanf("%d", &n);
 	REP(i, n){
-		scanf("%d", &s);
+		scanf("%s", &s);
 		addtoList(s);
 	}
+	printf("%d", ans);
 	return 0;
 }
 
