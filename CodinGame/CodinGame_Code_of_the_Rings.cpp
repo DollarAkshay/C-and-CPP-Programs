@@ -334,32 +334,3 @@ int main(){
 	return 0;
 }
 
-/*
-Testcase : #01 = 7
-Testcase : #02 = 37
-Testcase : #03 = 152
-Testcase : #04 = 29
-Testcase : #05 = 33
-Testcase : #06 = 23
-Testcase : #07 = 34
-Testcase : #08 = 94
-Testcase : #09 = 193
-Testcase : #10 = 107
-Testcase : #11 = 74
-Testcase : #12 = 226
-Testcase : #13 = 358
-Testcase : #14 = 716
-Testcase : #15 = 294
-Testcase : #16 = 44
-Testcase : #17 = 597
-Testcase : #18 = 243
-Testcase : #19 = 128
-Testcase : #20 = 323
-Testcase : #21 = 291
-Testcase : #22 = 284
-Testcase : #23 = 243
-Testcase : #24 = 1438
-You final score is 5968
-
-
-*/
