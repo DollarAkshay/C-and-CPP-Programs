@@ -38,47 +38,55 @@ struct point{
 vector<int> tree[150000];
 
 int v[150000];
+int n, e;
 
-int height(int s){
+int topo(){
 
-	v[s] = 1;
-	int h=1, size = tree[s].size();
-	REP(i, size){
-		if (v[tree[s][i]]==0)
-			h = max(h, 1+height(tree[s][i]));
+	int erased = 0,time = 0;
+	vector<int> leaf;
+	while (erased < e){
+
+		REP(i, n){
+			if (tree[i].size() == 1){
+				leaf.push_back(i);
+				erased++;
+			}
+		}
+
+		REP(i, leaf.size()){
+			int x;
+			if (tree[leaf[i]].size() >= 1){
+				REP(j, tree[tree[leaf[i]][0]].size()){
+					if (tree[tree[leaf[i]][0]][j] == leaf[i]){
+						x = j;
+						break;
+					}
+				}
+				tree[tree[leaf[i]][0]].erase(tree[tree[leaf[i]][0]].begin() + x);
+				tree[leaf[i]].clear();
+			}
+		}
+		leaf.clear();
+		time++;
 	}
-	v[s] = 0;
-	return h;
-
+	return time;
 }
 
 int main(){
 
-	int n, e;
-	FILE *fp = fopen("testcase.txt", "r");
+	
 	scanf("%d", &e);
 	n = e + 1;
 	REP(i, e){
 		int u, v;
 		scanf("%d%d", &u, &v);
+		n = max(u + 1, n);
+		n = max(v + 1, n);
 		tree[u].push_back(v);
 		tree[v].push_back(u);
 	}
-	
 
-	int fast = n;
-	clock_t tim = clock();
-	REP(i, n){
-		if (tree[i].size()>1)
-			fast = min(height(i),fast);
-		if (i % 100 == 0){
-			//system("cls");
-			//printf("%.4f completed\n", (float)i * 100 / n);
-		}
-	}
-	printf("%d\n", fast-1);
-	tim = clock() - tim;
-	//printf("Time taken = %f sec\n", (float)tim / CLOCKS_PER_SEC);
+	printf("%d", topo());
 	return 0;
 }
 
