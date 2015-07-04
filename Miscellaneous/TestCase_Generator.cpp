@@ -34,15 +34,28 @@ using namespace std;
 int main(){
 
 	srand(time(NULL));
-
-	int n = 100000;
 	FILE *fp = fopen("testcase.txt", "w");
-	fprintf(fp, "%d\n", n);
-	REP(i, n){
-		fprintf(fp, "%d ", rand());
+
+	int t = 2;
+	
+	fprintf(fp, "%d\n", t);
+	REP(tc, t){
+		int n = 8;
+		int k = rand() % 10 + 5;
+		int m = rand() % 4 + 3;
+		fprintf(fp, "\n%3d %3d %3d\n", n, k, m);
+		REP(i, n)
+			fprintf(fp, "%3d ", rand()%30-15);
+		REP(i, m){
+			int l = rand()%n;
+			int r = l + rand() % (n - l);
+			int c = rand() %5+3;
+			fprintf(fp, "%3d %3d %3d\n", l, r, c);
+		}
+		
 	}
 	fclose(fp);
-	printf("Done");
+	printf("Done\n");
 	sp;
 	return 0;
 }
