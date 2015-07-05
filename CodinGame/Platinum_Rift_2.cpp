@@ -61,6 +61,7 @@ zoneNode zone[500];
 
 void init(){
 
+	roundNo = 1;
 	srand(time(NULL));
 }
 
@@ -126,6 +127,8 @@ int main(){
 		if (roundNo == 1){
 			enemyBase = enemyPods[0];
 			myBase = myPods[0];
+			DB("My Base ID : %d\n", myBase);
+			DB("Enemy Base ID : %d\n", enemyBase);
 		}
 
 		//Make a move for all the pods
@@ -143,4 +146,4 @@ int main(){
 	return 0;
 }
 
-//
+//RANDOM AI : Each pod moves to a random zone next to it.
