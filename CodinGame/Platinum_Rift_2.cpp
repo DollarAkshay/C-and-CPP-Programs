@@ -96,7 +96,7 @@ int main(){
 		zone[z1].neighbours.pb(z2);
 		zone[z2].neighbours.pb(z1);
 	}
-
+	while (1)printf("WAIT\nWAIT\n");
 	//Game Loop
 	while(1){
 		//Reading Current Platinum 
