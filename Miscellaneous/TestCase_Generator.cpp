@@ -36,24 +36,18 @@ int main(){
 	srand(time(NULL));
 	FILE *fp = fopen("testcase.txt", "w");
 
-	int t = 2;
-	
-	fprintf(fp, "%d\n", t);
-	REP(tc, t){
-		int n = 8;
-		int k = rand() % 10 + 5;
-		int m = rand() % 4 + 3;
-		fprintf(fp, "\n%3d %3d %3d\n", n, k, m);
-		REP(i, n)
-			fprintf(fp, "%3d ", rand()%30-15);
-		REP(i, m){
-			int l = rand()%n;
-			int r = l + rand() % (n - l);
-			int c = rand() %5+3;
-			fprintf(fp, "%3d %3d %3d\n", l, r, c);
-		}
-		
+	int n = 100;
+	fprintf(fp, "100 100\n", rand() % 19 - 9);
+	REP(i, n)
+		fprintf(fp, "%d ", rand()%19-9);
+
+	printf("\n");
+	REP(i, n){
+		int l = rand() % n;
+		int r = rand() % (n - l) + l;
+		fprintf(fp, "%d %d\n",l,r);
 	}
+
 	fclose(fp);
 	printf("Done\n");
 	sp;
