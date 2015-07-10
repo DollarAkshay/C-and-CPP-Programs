@@ -1,75 +1,45 @@
-/*~~~~~~~~~~~~~~~~~~*
-*                  *
-* $Dollar Akshay$  *
-*                  *
-*~~~~~~~~~~~~~~~~~~*/
-
-//https://www.hackerearth.com/thoughtworks-qa-hiring-challenge/problems/82ecfe46e53e38a00aeaaca93c3de867/
-
-#include <math.h>
-#include <time.h>
-#include <ctype.h>
 #include <stdio.h>
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <map>
-#include <set>
-#include <deque>
-#include <queue>
-#include <stack>
-#include <bitset>
-#include <string>
-#include <vector>
-#include <iostream>
-#include <algorithm>
+#include<string.h>
+#include<conio.h>
 
-using namespace std;
-
-#define sp system("pause")
-#define FOR(i,a,b) for(int i=a;i<=b;++i)
-#define FORD(i,a,b) for(int i=a;i>=b;--i)
-#define REP(i,n) FOR(i,0,(int)n-1)
-#define pb(x) push_back(x)
-#define mp(a,b) make_pair(a,b)
-#define MS0(x) memset(x,0,sizeof(x))
-#define MS1(x) memset(x,1,sizeof(x))
-#define SORT(a,n) sort(begin(a),begin(a)+n)
-#define REV(a,n) reverse(begin(a),begin(a)+n)
-#define ll long long
-#define pii pair<int,int>
-#define MOD 1000000007
-
-char s[5000005];
-
-int main(){
-
-	int t, n;
-	scanf("%d", &t);
-	if (t>=1 && t<=10){
-		REP(tc, t){
-			scanf("%s", s);
-			int len = strlen(s);
-			if (len<1 || len>100)
-				puts("Invalid Input");
-			else{
-				int l = 0, u = 0;
-				REP(i, len){
-					if (islower(s[i]))
-						l++;
-					else if (isupper(s[i]))
-						u++;
-				}
-				if (u==0 && l==0)
-					puts("Invalid Input");
-				else
-					printf("%d\n", min(u, l));
+int main()
+{
+	int T, i, j, k, countup = 0, countlo = 0;
+	char S[100];
+	scanf("%d", &T);
+	if (T>=1 && T<=10)
+	{
+		while (T--)
+		{
+			countup = 0;
+			countlo = 0;
+			scanf("%s", S);
+			for (i = 0; i<strlen(S); i++)
+			{
+				if (isupper(S[i]))
+					countup++;
+				else if (islower(S[i]))
+					countlo++;
+			}
+			if (countup==0 && countlo==0)
+			{
+				printf("Invalid Input\n");
+				continue;
+			}
+			if (countup<countlo)
+			{
+				printf("%d\n", countup);
+				continue;
+			}
+			else if (countup>countlo)
+			{
+				printf("%d\n", countlo);
 			}
 		}
 	}
 	else
-		puts("Invalid Test");
-	return 0;
+	{
+		printf("Invalid Test\n");
+	}
+	getch();
 }
-
-//Solved

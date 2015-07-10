@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerearth.com/thoughtworks-qa-hiring-challenge/problems/dd7f08d2b0e60e90dfc9214cd5aa0131/
+//https://www.hackerearth.com/code_hunt_11/algorithm/find-pairs/
 
 #include <math.h>
 #include <time.h>
@@ -40,39 +40,32 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-
+int a[200000];
 
 int main(){
 
-	vector<string> s;
-
-	s.pb("12:00:00"); //
-	s.pb("00:00:00"); //
-	s.pb("23:59:59"); //
-
-	s.pb("-12:-30:-30"); //
-
-	s.pb("99:99:99"); //
-
-	s.pb("hh:mm:ss"); //
-
-	s.pb("01,00:00"); //
-	s.pb("01.00:00");
-	s.pb("01;00:00");
-	s.pb("01/00/00"); //
-
-	s.pb("dd:00:00:ss"); //
-	s.pb("Akshay....."); //
-	s.pb("6000878877"); //
-
-	s.pb(""); //
-
-
-	printf("%d\n", s.size());
-	REP(i, s.size())
-		printf("%s\n", s[i].c_str());
-
+	int t, n;
+	scanf("%d", &t);
+	REP(tc, t){
+		scanf("%d", &n);
+		map<int, int> m;
+		REP(i, n){
+			int x;
+			scanf("%d", &x);
+			if (m.count(x))
+				m[x]++;
+			else
+				m[x] = 1;
+		}
+		ll int ans = 0;
+		map<int, int>::iterator it;
+		for (it = m.begin(); it!=m.end(); it++){
+			ll int c = it->second;
+			ans += c*(c+1)/2;
+		}
+		printf("%lld\n", ans);
+	}
 	return 0;
 }
 
-//Partially Solved
+//Solved
