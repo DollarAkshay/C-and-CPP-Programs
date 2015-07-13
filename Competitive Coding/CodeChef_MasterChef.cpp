@@ -18,6 +18,7 @@
 #include <deque>
 #include <queue>
 #include <stack>
+#include <bitset>
 #include <string>
 #include <vector>
 #include <iostream>
@@ -36,8 +37,9 @@ using namespace std;
 #define SORT(a,n) sort(begin(a),begin(a)+n)
 #define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
+#define pii pair<int,int>
 #define MOD 1000000007
-#define gc getchar_unlocked
+#define gc getchar
 
 void scanint(int &x){
 	register int c = gc();
@@ -73,25 +75,36 @@ int main(){
 
 	int t, n,m,k;
 	scanint(t);
-
+	
 	REP(tc, t){
 		ll int rating = 0;
 		vector<pair<int,int>> neg;
 		scanint(n); scanint(k); scanint(m);
-		int *a = (int*)malloc((n + 1)*sizeof(int)), *cost = (int*)calloc((n + 1),sizeof(int));
+		int *a = (int*)malloc((n + 1)*sizeof(int)), cost[100001];
+		MS0(cost);
 		FOR(i, 1, n){
 			scanint(a[i]);
 			rating += a[i];
 			if (a[i]<0)
 				neg.pb(mp(a[i],i));
 		}
+		vector<pii> L[100001];
+		vector<pii> R[100001];
 		FOR(i, 1, m){
 			int c, l, r;
 			scanint(l); scanint(r); scanint(c);
-			FOR(j, l, r){
-				if (cost[j] == 0 || cost[j] > c && c<=k)
-					cost[j] = c;
-			}
+			L[l].pb(mp(c,i));
+			R[r].pb(mp(c,i));
+		}
+		set<pii> iset;
+		FOR(i, 1, n){
+			REP(j, L[i].size())
+				iset.insert(L[i][j]);
+
+			cost[i] = iset.begin()->first;
+
+			REP(j, R[i].size())
+				iset.erase(R[i][j]);
 		}
 		printf("%lld\n", rating - minimizeKnapsack(neg, cost, k));
 	}
@@ -99,4 +112,4 @@ int main(){
 	return 0;
 }
 
-//Partially Solved ~ TLE
+//Solved :D EEEEEEEEEEeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
