@@ -32,7 +32,7 @@ using namespace std;
 #define REP(i,n) FOR(i,0,(int)n-1)
 #define pb(x) push_back(x)
 #define mp(a,b) make_pair(a,b)
-#define DB(s,...) fprintf(stderr,s, ##__VA_ARGS__);
+#define DB(format,...) fprintf(stderr,format, ##__VA_ARGS__);
 #define MS(x,n) memset(x,n,sizeof(x))
 #define SORT(a,n) sort(begin(a),begin(a)+n)
 #define REV(a,n) reverse(begin(a),begin(a)+n)
@@ -41,86 +41,90 @@ using namespace std;
 #define MOD 1000000007
 
 
+vector<string> s;
+vector<int> order;
 
-bool comp(string l, string r){
-	return l<r;
-}
+int overlap(string s1, string s2){
 
-
-void Shortest_Common_Supersequence(char res[], string s){
-
-	int DP[61][11], n = strlen(res), m = s.size();
-
-	FOR(ii, 0, n){
-		FOR(j, 0, m){
-			if (j==0)
-				DP[ii][j] = ii;
-			else if (ii==0)
-				DP[ii][j] = j;
-			else if (res[ii-1]==s[j-1])
-				DP[ii][j] = 1 + DP[ii-1][j-1];
-			else
-				DP[ii][j] = 1 + min(DP[ii-1][j], DP[ii][j-1]);
-		}
+	int max = 0;
+	FOR(i, 1, min(s1.size(), s2.size()) ){
+		if (strncmp(s1.c_str()+s1.size()-i, s2.c_str(), i)==0)
+			max = i;
 	}
-
-	char temp[61];
-	int k = DP[n][m];
-	temp[k--] = 0;
-
-	int i = n, j = m;
-	while (i>0 && j>0){
-		if (res[i-1]==s[j-1]){
-			temp[k--] = res[i-1];
-			i--;
-			j--;
-		}
-		else{
-			if (DP[i-1][j]<DP[i][j-1])
-				temp[k--] = res[--i];
-			else
-				temp[k--] = s[--j];
-		}
-	}
-	while (i>0)
-		temp[k--] = res[--i];
-	while (j>0)
-		temp[k--] = s[--j];
-
-	DB("SCS = %s\n", temp);
-	strcpy(res, temp);
-
+	return max;
 }
-
-
-	
 
 
 int main(){
 
 	int n;
-	vector<string>s;
-
+	s.pb("");
 	scanf("%d", &n);
 	REP(i, n){
 		char ts[11];
 		scanf("%s", ts);
 		s.pb(ts);
 	}
+	//sort(s.begin(), s.end());
 
-	sort(s.begin(), s.end());
+	order.pb(0);
+	order.pb(1);
+	order.pb(0);
 
-	char res[61];
-	strcpy(res,s[0].c_str());
+	FOR(i, 2, n){
 
+		int isSub = 0;
+		FOR(j, 1, order.size()-2){
+			if (strstr(s[order[j]].c_str(),s[i].c_str())){
+				isSub = 1;
+				break;
+			}
+		}
+		if (isSub)
+			continue;
 
+		int max = -1, pos = -1;
+		FOR(j, 1, order.size()-1){
+			int r = overlap(s[i], s[order[j]]);
+			int l = overlap(s[order[j-1]], s[i]);
+			int o = 0;
+			REP(k,j-1)
+				o += overlap(s[order[k]], s[order[k+1]]);
 
-	FOR(i,1,n-1)
-		Shortest_Common_Supersequence(res, s[i]);
-	
-	printf("%d", strlen(res));
-	
+			FOR(k, j, order.size()-2)
+				o += overlap(s[order[k]], s[order[k+1]]);
+
+			if (l+r+o>max){
+				max = l+r+o;
+				pos = j;
+			}
+		}
+		auto it = order.begin();
+		while (pos--)
+			it++;
+		order.insert(it, i);
+	}
+
+	string res = s[order[1]];
+
+	FOR(i, 2, order.size()-2){
+		if (strstr(res.c_str(), s[order[i]].c_str()))
+			continue;
+		int l = overlap(s[order[i]], res);
+		int r = overlap(res, s[order[i]]);
+
+		if (l>r){
+			string t = res;
+			res = s[order[i]];
+			res.insert(res.end(), t.begin()+l, t.end());
+		}
+		else{
+			res.insert(res.end(), s[order[i]].begin()+r, s[order[i]].end());
+		}
+	}
+	DB("Res = %s\n", res.c_str());
+	printf("%d", res.size());
 	return 0;
 }
 
-//
+//Solved
