@@ -1,3 +1,6 @@
+
+##http://www.spoj.com/problems/JULKA/
+
 t = 10
 while t :
 	a = input()
@@ -6,3 +9,5 @@ while t :
 	print x + b
 	print x
 	t -= 1
+
+##Solved
