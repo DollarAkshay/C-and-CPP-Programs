@@ -4,7 +4,7 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
-//http://www.spoj.com/problems/EASYPROB/
+//http://www.spoj.com/problems/BYTESM2/
 
 #include <math.h>
 #include <time.h>
@@ -34,62 +34,59 @@ using namespace std;
 #define mp(a,b) make_pair(a,b)
 #define MS0(x) memset(x,0,sizeof(x))
 #define MS1(x) memset(x,1,sizeof(x))
-#define SORT(a,n) sort(begin(a),begin(a)+n)
-#define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int i,a[] = { 137, 1315, 73, 136, 255, 1384, 16385 };
+int r, c, a[100][100];
+int DP[100][100];
 
-vector<int> bin[7];
+int ans;
 
-vector<int> int_to_Binary(int n){
+int DFS_DP(int s, int level){
 
-	int i = 0;
-	vector<int> res;
-	while (n){
-		if (n%2)
-			res.pb(i);
-		n /= 2;
-		i++;
-	}
-	return res;
-}
 
-void printDig(int n){
+	if (DP[level-1][s]!=-1)
+		return DP[level-1][s];
 
-	if (n==0){
-		printf("2(0)");
-		return;
-	}
-	else if (n==1){
-		printf("2");
-		return;
-	}
-	vector<int> p = int_to_Binary(n);
+	if (level==r)
+		return a[level-1][s];
 
-	if (n!=a[i])
-		printf("2(");
-	FORD(i, p.size()-1, 0){
-		printDig(p[i]);
-		if (i)
-			printf("+");
-	}
-	if (n!=a[i])
-		printf(")");
+	int left=0, down=0, right=0;
+
+	if (s+1<c)
+		right = a[level-1][s] + DFS_DP(s+1, level+1);
+
+	down = a[level-1][s] + DFS_DP(s, level+1);
+
+	if (s-1>=0)
+		left = a[level-1][s] + DFS_DP(s-1, level+1);
+
+	DP[level-1][s] = max(max(left, right), down);
+
+	return DP[level-1][s];
+
 }
 
 int main(){
 
-	while (i<7){
-		printf("%d=",a[i]);
-		printDig(a[i]);
-		printf("\n");
-		i++;
+	int t;
+	scanf("%d", &t);
+	REP(tc, t){
+		ans = 0;
+		scanf("%d%d", &r, &c);
+		REP(i, r){
+			REP(j, c){
+				scanf("%d", &a[i][j]);
+				DP[i][j] = -1;
+			}
+		}
+		REP(i, c){
+			ans = max(ans,DFS_DP(i,1));
+		}
+		printf("%d\n", ans);
 	}
 	sp;
-
 	return 0;
 }
 
