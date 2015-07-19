@@ -1,0 +1,82 @@
+/*~~~~~~~~~~~~~~~~~~*
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
+
+//http://www.spoj.com/problems/AGGRCOW/
+
+#include <math.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <map>
+#include <set>
+#include <deque>
+#include <queue>
+#include <stack>
+#include <bitset>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+
+using namespace std;
+
+#define sp system("pause")
+#define FOR(i,a,b) for(int i=a;i<=b;++i)
+#define FORD(i,a,b) for(int i=a;i>=b;--i)
+#define REP(i,n) FOR(i,0,(int)n-1)
+#define pb(x) push_back(x)
+#define mp(a,b) make_pair(a,b)
+#define MS0(x) memset(x,0,sizeof(x))
+#define MS1(x) memset(x,1,sizeof(x))
+#define SORT(a,n) sort(begin(a),begin(a)+n)
+#define REV(a,n) reverse(begin(a),begin(a)+n)
+#define ll long long
+#define pii pair<int,int>
+#define MOD 1000000007
+
+int a[100000];
+
+int cows(int dist, int n){
+
+	int c = 1, prev = 0;
+	FOR(i, 1, n-1){
+		if (a[i]-a[prev]>=dist){
+			c++;
+			prev = i;
+		}
+	}
+	return c;
+}
+
+int main(){
+
+	int t, n, c;
+	scanf("%d", &t);
+	REP(tc, t){
+		scanf("%d%d", &n, &c);
+		REP(i, n)
+			scanf("%d", &a[i]);
+		SORT(a, n);
+		int hi = a[n-1]-a[0], lo = 1, ans;
+
+		while (hi>=lo){
+			int mid = (hi+lo)/2;
+			if (cows(mid, n)>=c){
+				ans = lo = mid;
+				lo++;
+			}
+			else
+				hi = mid-1;
+		}
+		printf("%d\n", ans);
+	}
+	return 0;
+}
+
+//Solved
