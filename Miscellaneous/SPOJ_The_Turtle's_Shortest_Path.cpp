@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//http://www.spoj.com/problems/SHPATH/
+//http://www.spoj.com/problems/TSHPATH/
 
 #include <math.h>
 #include <time.h>
@@ -70,7 +70,7 @@ void dijkstra(int n, int s){
 
 	REP(i, n)
 		ans[s].pb(MAX);
-	
+
 
 	ans[s][s] = 0;
 	q.push({ s, 0 });
@@ -121,7 +121,7 @@ int main(){
 			int start = city[c1], end = city[c2];
 			if (ans[start].size()==0)
 				dijkstra(n, start);
-			printf("%d\n",ans[start][end]);
+			printf("%d\n", ans[start][end]);
 		}
 		REP(i, n){
 			ans[i].clear();
