@@ -4,7 +4,7 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
-//
+//https://www.hackerrank.com/contests/countercode/challenges/best-photo
 
 #include <math.h>
 #include <time.h>
