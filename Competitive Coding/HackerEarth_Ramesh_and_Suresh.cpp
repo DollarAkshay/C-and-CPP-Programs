@@ -4,19 +4,26 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
+//https://www.hackerearth.com/codification/algorithm/gopals-rectangles/
 
+#include <math.h>
+#include <time.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
-#include <math.h>
-#include <ctype.h>
-#include <time.h>
-#include <assert.h>
-#include <algorithm>
-#include <iostream>
+#include <map>
+#include <set>
+#include <deque>
 #include <queue>
 #include <stack>
+#include <bitset>
+#include <string>
 #include <vector>
+#include <iostream>
+#include <algorithm>
+#include <functional>
 
 using namespace std;
 
@@ -24,40 +31,26 @@ using namespace std;
 #define FOR(i,a,b) for(int i=a;i<=b;++i)
 #define FORD(i,a,b) for(int i=a;i>=b;--i)
 #define REP(i,n) FOR(i,0,(int)n-1)
+#define pb(x) push_back(x)
+#define mp(a,b) make_pair(a,b)
 #define MS0(x) memset(x,0,sizeof(x))
 #define MS1(x) memset(x,1,sizeof(x))
 #define SORT(a,n) sort(begin(a),begin(a)+n)
 #define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
+#define pii pair<int,int>
 #define MOD 1000000007
+
 
 int main(){
 
-	srand(time(NULL));
-	FILE *fp = fopen("testcase.txt", "w");
-
-	int n = 1000000,m =100;
-	fprintf(fp, "%d\n",n);
-	REP(i, n){
-		int x = (int)rand()*rand();
-		while (x>1000000000){
-			x = (int)rand()*rand();
-			printf(".");
-		}
-		fprintf(fp, "%d ", x);
+	int t, n, m;
+	scanf("%d", &t);
+	REP(tc, t){
+		scanf("%d%d", &n, &m);
+		printf("%lld\n", (ll int)(m+1)*(n+1)*m*n/4);
 	}
-	fprintf(fp, "\n");
-	/*
-	REP(i, m){
-		int l = rand()%(n/2);
-		int r = min(n-1, l+rand()%(n/2));
-		fprintf(fp, "%d %d\n", l+1, r+1);
-	}
-	*/
-	fclose(fp);
-	printf("Done\n");
-	sp;
 	return 0;
 }
 
-//
+//Solved
