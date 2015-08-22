@@ -92,21 +92,21 @@ void dijkstra(int n, int s){
 }
 
 
-int main(){
+int main() {
 
 	char c[11];
 	int t, n, m;
 	scanint(t);
-	REP(tc, t){
+	REP(tc, t) {
 
 		map<string, int> city;
 
 		scanint(n);
-		REP(i, n){
+		REP(i, n) {
 			scanf("%s", c);
 			city[c] = i;
 			scanint(m);
-			REP(j, m){
+			REP(j, m) {
 				int w, v;
 				scanint(v);
 				scanint(w);
@@ -115,15 +115,15 @@ int main(){
 		}
 		int q;
 		scanf("%d", &q);
-		REP(i, q){
+		REP(i, q) {
 			char c1[11], c2[11];
 			scanf("%s %s", c1, c2);
 			int start = city[c1], end = city[c2];
 			if (ans[start].size()==0)
 				dijkstra(n, start);
-			printf("%d\n",ans[start][end]);
+			printf("%d\n", ans[start][end]);
 		}
-		REP(i, n){
+		REP(i, n) {
 			ans[i].clear();
 			g[i].clear();
 		}
