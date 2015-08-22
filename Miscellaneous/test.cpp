@@ -16,8 +16,8 @@ int fib(int n) {
 int main(){
 
 	int n;
-	string str = "abcdefghijklmnopqrstuvwxyz";
-	fib(22);
+	n = fib(23);
+	printf("Fib = %d\n",n);
 	int a = 0;
 	printf("Done\n");
 	system("pause");
