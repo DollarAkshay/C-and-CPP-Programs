@@ -16,7 +16,7 @@ int fib(int n) {
 int main(){
 
 	int n;
-	n = fib(23);
+	n = fib(40);
 	printf("Fib = %d\n",n);
 	int a = 0;
 	printf("Done\n");

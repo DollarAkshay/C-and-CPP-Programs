@@ -3,8 +3,7 @@
 # Edited by Akshay.L.Aradhya
 ################################################################################
 
-/1st Year Project Solution.opensdf
-/1st Year Project/Debug/1st Year Project.tlog
+/@Visual Studio Files
 *.log
 *.sdf
 *.suo
@@ -17,3 +16,7 @@
 *.sln
 *.ico
 *.opensdf
+*.exe
+*.ini
+*.pdb
+*.user
