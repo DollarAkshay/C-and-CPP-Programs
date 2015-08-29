@@ -72,7 +72,6 @@ int main(){
 	fclose(f2);
 	fclose(f3);
 
-
 	sp;
 	return 0;
 }
