@@ -41,22 +41,38 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int a[100000];
+
 
 int main(){
 
-	FILE *f = fopen("HackerRank.txt", "r");
-	map<string, int> hash;
+	FILE *f1 = fopen("HackerRank_Full.txt", "r");
+	FILE *f2 = fopen("HackerRank_Win.txt", "r");
+	FILE *f3 = fopen("HackerRank_Win_sorted.txt", "w");
+	
 	string s;
-	while(fscanf(f,"%s" , s.c_str())>0){
-		if (s=="mcohnen")
-			printf("");
-		//printf("%d\n", hash.count(s.c_str()));
+	map<string, int> hash;
+	int i = 1;
+	vector<pair<int, string>> hash2;
+
+	while(fscanf(f1,"%s" , s.c_str())>0){
 		if (hash.count(s.c_str())==0)
-			hash[s.c_str()] = 1;
+			hash[s.c_str()] = i++;
 		else
 			printf("'%s' already exists\n", s.c_str());
 	}
+
+	while (fscanf(f2, "%s", s.c_str())>0) {
+		hash2.push_back( mp(hash[s.c_str()], s.c_str()) );
+	}
+	SORT(hash2, hash2.size());
+	REP(i, hash2.size())
+		fprintf(f3, "%s\n", hash2[i].second.c_str());
+
+	fclose(f1);
+	fclose(f2);
+	fclose(f3);
+
+
 	sp;
 	return 0;
 }
