@@ -169,7 +169,6 @@ int main() {
 //Perfect Algo :)
 
 /*
----------------------------------------------------------------------------
 01 function alphabeta(node, depth, ?, ?, maximizingPlayer)
 02      if depth = 0 or node is a terminal node
 03          return the heuristic value of node
