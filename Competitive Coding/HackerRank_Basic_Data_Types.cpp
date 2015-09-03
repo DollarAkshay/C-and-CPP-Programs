@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//
+//https://www.hackerrank.com/challenges/c-tutorial-basic-data-types
 
 #include <math.h>
 #include <time.h>
