@@ -46,33 +46,8 @@ using namespace std;
 #define MAX (~0 - MIN)
 
 #define SIZE 8
-#define BOARD_SIZE 10
 
-
-
-struct point {
-	int x, y;
-};
-
-struct GameState {
-	char board[BOARD_SIZE][BOARD_SIZE];
-	void addMove(point p, char player) {
-		if (player=='v') {
-			board[p.y][p.x] = player;
-			board[p.y+1][p.x] = player;
-		}
-		else {
-			board[p.y][p.x] = player;
-			board[p.y][p.x+1] = player;
-		}
-	}
-};
-
-int MAX_DEPTH = 4;
-char player, opponent;
-int turn, calls[100], totalCalls;
-
-bool canPlace(char board[BOARD_SIZE][BOARD_SIZE], int x, int y, char type) {
+bool canPlace(char board[SIZE][SIZE], int x, int y, char type) {
 	if (type=='v') {
 		if (y>=0 && y<SIZE-1 && board[y][x]=='-' && board[y+1][x]=='-')
 			return true;
@@ -87,85 +62,159 @@ bool canPlace(char board[BOARD_SIZE][BOARD_SIZE], int x, int y, char type) {
 	}
 }
 
-vector<point> getMoves(GameState g, char player) {
+struct point {
+	int x, y;
+};
 
-	vector<point> moves;
-	REP(i, SIZE) {
-		REP(j, SIZE) {
-			if (canPlace(g.board, j, i, player))
-				moves.push_back({ j,i });
+struct GameState {
+	char board[SIZE][SIZE];
+	int moveV[SIZE][SIZE];
+	int moveH[SIZE][SIZE];
+	int movesH=0, movesV=0;
+
+	void setMoveH(int x, int y, bool val) {
+		if (x>=0 && y>=0 && moveH[y][x]!=val) {
+			moveH[y][x] = val;
+			val==1?movesH++:movesH--;
 		}
 	}
-	return moves;
+	void setMoveV(int x, int y, bool val) {
+		if (x>=0 && y>=0 && moveV[y][x]!=val) {
+			moveV[y][x] = val;
+			val==1?movesV++:movesV--;
+		}
+	}
+	void addMove(point p, char player) {
+		if (player=='v') {
+			board[p.y][p.x] = player;
+			board[p.y+1][p.x] = player;
+			setMoveV(p.x, p.y-1, 0);
+			setMoveV(p.x, p.y, 0);
+			setMoveV(p.x, p.y+1, 0);
+			setMoveH(p.x, p.y, 0);
+			setMoveH(p.x, p.y+1, 0);
+			setMoveH(p.x-1, p.y, 0);
+			setMoveH(p.x-1, p.y+1, 0);
+		}
+		else {
+			board[p.y][p.x] = player;
+			board[p.y][p.x+1] = player;
+			setMoveH(p.x-1, p.y, 0);
+			setMoveH(p.x, p.y, 0);
+			setMoveH(p.x+1, p.y, 0);
+			setMoveV(p.x, p.y, 0);
+			setMoveV(p.x+1, p.y, 0);
+			setMoveV(p.x, p.y-1, 0);
+			setMoveV(p.x+1, p.y-1, 0);
+		}
+	}
+	void removeMove(point p, char player) {
+		if (player=='v') {
+			board[p.y][p.x] = '-';
+			board[p.y+1][p.x] = '-';
+			setMoveV(p.x, p.y-1, canPlace(board, p.x, p.y-1, 'v'));
+			setMoveV(p.x, p.y, canPlace(board, p.x, p.y, 'v'));
+			setMoveV(p.x, p.y+1, canPlace(board, p.x, p.y+1, 'v'));
+			setMoveH(p.x, p.y, canPlace(board, p.x, p.y, 'h'));
+			setMoveH(p.x, p.y+1, canPlace(board, p.x, p.y+1, 'h'));
+			setMoveH(p.x-1, p.y, canPlace(board, p.x-1, p.y, 'h'));
+			setMoveH(p.x-1, p.y+1, canPlace(board, p.x-1, p.y+1, 'h'));
+		}
+		else {
+			board[p.y][p.x] = '-';
+			board[p.y][p.x+1] = '-';
+			setMoveH(p.x-1, p.y, canPlace(board, p.x-1, p.y, 'h'));
+			setMoveH(p.x, p.y, canPlace(board, p.x, p.y, 'h'));
+			setMoveH(p.x+1, p.y, canPlace(board, p.x+1, p.y, 'h'));
+			setMoveV(p.x, p.y, canPlace(board, p.x, p.y, 'v'));
+			setMoveV(p.x+1, p.y, canPlace(board, p.x+1, p.y, 'v'));
+			setMoveV(p.x, p.y-1, canPlace(board, p.x, p.y-1, 'v'));
+			setMoveV(p.x+1, p.y-1, canPlace(board, p.x+1, p.y-1, 'v'));
+		}
+	}
+};
 
-}
+int MAX_DEPTH = 10;
+char player, opponent;
+int turn, calls[100], totalCalls;
 
-int evaluate(vector<point> &movesMax, vector<point> &movesMin, bool maximizingPlayer) {
+int evaluate(GameState &game, bool maximizingPlayer) {
 
-	if (maximizingPlayer && movesMax.size()==0)
-		return -100 - movesMin.size();
-	else if (!maximizingPlayer && movesMin.size()==0)
-		return 100 + movesMax.size();
+	if (maximizingPlayer && ((player=='v' && game.movesV==0) || (player=='h' && game.movesH==0)))
+		return -100 - (player=='v'?game.movesH:game.movesV);
+	else if (!maximizingPlayer && ((opponent=='v' && game.movesV==0) || (opponent=='h' && game.movesH==0)))
+		return 100 + (opponent=='v'?game.movesH:game.movesV);
 	else
-		return movesMax.size() - movesMin.size();
+		return player=='v'?game.movesV-game.movesH:game.movesH-game.movesV;
 
 }
 
-int minimax(GameState node, int depth, int alpha, int beta, bool maximizingPlayer) {
+int minimax(GameState &game, int depth, int alpha, int beta, bool maximizingPlayer) {
 
 	calls[depth]++;
-	vector<point> movesMax = getMoves(node, player);
-	vector<point> movesMin = getMoves(node, opponent);
 
-	if (depth == MAX_DEPTH || (maximizingPlayer && movesMax.size()==0) || (!maximizingPlayer && movesMin.size()==0)) {
-		return evaluate(movesMax, movesMin, maximizingPlayer);
+	if ( depth == MAX_DEPTH || 
+		(maximizingPlayer && ((player=='v' && game.movesV==0) || (player=='h' && game.movesH==0))) ||
+		(!maximizingPlayer && ((opponent=='v' && game.movesV==0) || (opponent=='h' && game.movesH==0)))) {
+		return evaluate(game, maximizingPlayer);
 	}
 
 	if (maximizingPlayer) {
 		int val = MIN;
-		REP(i, movesMax.size()) {
-			GameState child = node;
-			child.addMove(movesMax[i], player);
-			val = max(val, minimax(child, depth+1, alpha, beta, !maximizingPlayer));
-			alpha = max(alpha, val);
-			if (beta<=alpha)
-				break;
+		REP(i, SIZE) {
+			REP(j, SIZE) {
+				point move = { j, i };
+				if ((player=='v' && game.moveV[i][j]) || (player=='h' && game.moveH[i][j])) {
+					game.addMove(move, player);
+					val = max(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
+					game.removeMove(move, player);
+					alpha = max(alpha, val);
+					if (beta<=alpha)
+						break;
+				}
+			}
 		}
 		return val;
 	}
 	else {
 		int val = MAX;
-		REP(i, movesMin.size()) {
-			GameState child = node;
-			child.addMove(movesMin[i], opponent);
-			val = min(val, minimax(child, depth+1, alpha, beta, !maximizingPlayer));
-			beta = min(beta, val);
-			if (beta<=alpha)
-				break;
+		REP(i, SIZE) {
+			REP(j, SIZE) {
+				point move = { j, i };
+				if ((opponent=='v' && game.moveV[i][j]) || (opponent=='h' && game.moveH[i][j])) {
+					game.addMove(move, opponent);
+					val = min(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
+					game.removeMove(move, opponent);
+					beta = min(beta, val);
+					if (beta<=alpha)
+						break;
+				}
+			}
 		}
 		return val;
 	}
 }
 
-point getBestMove(GameState g) {
-
-
-	MAX_DEPTH = 4;
-	DB("Max Tree Depth = %d\n", MAX_DEPTH);
+point getBestMove(GameState &game) {
 
 	int maxVal = MIN;
-	point bestMoves;
-	vector<point> possibleMoves = getMoves(g, player);
+	point bestMove;
 
-	REP(i, possibleMoves.size()) {
-		GameState child = g;
-		child.addMove(possibleMoves[i], player);
-		int moveVal = minimax(child, 1, maxVal, MAX, false);
-		if (moveVal>maxVal) {
-			maxVal = moveVal;
-			bestMoves = possibleMoves[i];
+	REP(i,SIZE){
+		REP(j, SIZE) {
+			point move = { j, i };
+			if ((player=='v' && game.moveV[i][j]) || (player=='h' && game.moveH[i][j])) {
+				game.addMove(move, player);
+				int moveVal = minimax(game, 1, maxVal, MAX, false);
+				game.removeMove(move, player);
+				if (moveVal>maxVal) {
+					maxVal = moveVal;
+					bestMove = move;
+				}
+			}
 		}
 	}
+
 	if (maxVal>=100)
 		DB("I WON !! I WON !! :D\n");
 	else if (maxVal>0)
@@ -173,30 +222,42 @@ point getBestMove(GameState g) {
 	else if (maxVal<=-100)
 		DB("I LOST :'( \n");
 
-	return bestMoves;
+	return bestMove;
 }
 
 int main() {
 
-	GameState original;
+	GameState game;
 	scanf("%c", &player);
 	opponent = player=='h'?'v':'h';
 
 	REP(i, SIZE) {
 		getchar();
-		scanf("%s", original.board[i]);
+		scanf("%s", game.board[i]);
 		REP(j, SIZE) {
-			if (original.board[i][j]!='-')
+			if (game.board[i][j]!='-')
 				turn++;
 		}
 	}
+
 	turn /= 2;
 	DB("Turn No : %d\n", turn);
+	MS0(game.moveH);
+	MS0(game.moveV);
+	REP(i, SIZE) {
+		REP(j, SIZE) {
+			game.setMoveH( j, i, canPlace(game.board, j, i, 'h'));
+			game.setMoveV( j, i, canPlace(game.board, j, i, 'v'));
+		}
+	}
+
+	
 	clock_t t = clock();
-	point move = getBestMove(original);
+	point move = getBestMove(game);
+	DB("Time Taken = %lf\n", (double)(clock() - t)/CLOCKS_PER_SEC);
+
 	printf("%d %d\n", move.y, move.x);
-	t = clock() - t;
-	DB("Time Taken = %lf\n", (double)t/CLOCKS_PER_SEC);
+
 
 	DB("\nFunction Calls :");
 	FOR(i, 1, 100) {
@@ -207,8 +268,10 @@ int main() {
 			DB("%d, ", calls[i]);
 	}
 	DB("\nTotal Function Calls : %d\n", totalCalls);
+
 	sp;
+
 	return 0;
 }
 
-//My algo looks pretty damn good :)
+//Improved my Efficiency like crazy
