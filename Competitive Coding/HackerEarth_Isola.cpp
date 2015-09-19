@@ -32,224 +32,275 @@ using namespace std;
 #define FORD(i,a,b) for(int i=a;i>=b;--i)
 #define REP(i,n) FOR(i,0,(int)n-1)
 #define DB(format,...) fprintf(stderr,format, ##__VA_ARGS__)
-#define pb(x) push_back(x)
-#define mp(a,b) make_pair(a,b)
-#define MS0(x) memset(x,0,sizeof(x))
-#define MS1(x) memset(x,1,sizeof(x))
-#define SORT(a,n) sort(begin(a),begin(a)+n)
-#define REV(a,n) reverse(begin(a),begin(a)+n)
 #define ll long long
-#define pii pair<int,int>
-#define MOD 1000000007
-
-
-struct GameMove {
-	int cell, bot;
+#define SIZE 7
+#define SIZE_EX 9
+struct point {
+	int x, y;
+	inline point operator +(const point &lhs) {
+		point t = *this;
+		t += lhs;
+		return t;
+	}
+	inline point operator -(const point &lhs) {
+		point t = *this;
+		t -= lhs;
+		return t;
+	}
+	inline void operator +=(const point &lhs) {
+		x += lhs.x;
+		y += lhs.y;
+	}
+	inline void operator -=(const point &lhs) {
+		x -= lhs.x;
+		y -= lhs.y;
+	}
+	inline bool operator ==(const point &lhs) const {
+		return x==lhs.x && y==lhs.y;
+	}
+	inline bool operator !=(const point &lhs) const {
+		return x!=lhs.x || y!=lhs.y;
+	}
 };
 
 struct GameState {
-	ll int board;
-	int player, opponent;
+	int board[SIZE_EX][SIZE_EX];
+	point player, opponent;
 };
 
-const int SIZE = 7;
+
+int MAX_DEPTH = 3;
+int player, opponent;
 const int MIN = 1<<31;
 const int MAX = ~0 - MIN;
-int MAX_DEPTH = 6;
+const int off = 1;
+const point offset = { 1, 1 };
 
-int player, opponent;
+int maxVal = MIN;
+point bestBotMove, bestCellMove;
 
-inline bool checkValidBotMove(GameState game, int move, bool player) {
-	if (player) {
-		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%7-game.player%SIZE)<=1 && abs(move/SIZE-game.player/SIZE)<=1 && (game.board&1LL<<move))
+const point dir[] =
+{
+	{ -1, -1 },{ 0, -1 },{ 1, -1 },
+	{ -1,  0 },{ 0,  0 },{ 1,  0 },
+	{ -1,  1 },{ 0,  1 },{ 1,  1 },
+};
+
+const point cell[] = {
+	{ 1, 1 },{ 1,  2 },{ 1, 3 },{ 1,  4 },{ 1, 5 },{ 1,  6 },{ 1,  7 },
+	{ 2, 1 },{ 2,  2 },{ 2, 3 },{ 2,  4 },{ 2, 5 },{ 2,  6 },{ 2,  7 },
+	{ 3, 1 },{ 3,  2 },{ 3, 3 },{ 3,  4 },{ 3, 5 },{ 3,  6 },{ 3,  7 },
+	{ 4, 1 },{ 4,  2 },{ 4, 3 },{ 4,  4 },{ 4, 5 },{ 4,  6 },{ 4,  7 },
+	{ 5, 1 },{ 5,  2 },{ 5, 3 },{ 5,  4 },{ 5, 5 },{ 5,  6 },{ 5,  7 },
+	{ 6, 1 },{ 6,  2 },{ 6, 3 },{ 6,  4 },{ 6, 5 },{ 6,  6 },{ 6,  7 },
+	{ 7, 1 },{ 7,  2 },{ 7, 3 },{ 7,  4 },{ 7, 5 },{ 7,  6 },{ 7,  7 }
+};
+
+inline bool makeValidBotMove(GameState &game, point move, bool maximizingPlayer) {
+	if (maximizingPlayer) {
+		if (game.board[move.y+game.player.y][move.x+game.player.x] == 1) {
+			game.board[game.player.y][game.player.x] = 1;
+			game.player += move;
+			game.board[game.player.y][game.player.x] = '1';
 			return true;
+		}
 		else
 			return false;
 	}
 	else {
-		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%SIZE-game.opponent%SIZE)<=1 && abs(move/SIZE-game.opponent/SIZE)<=1 && (game.board&1LL<<move))
+		if (game.board[move.y+game.opponent.y][move.x+game.opponent.x] == 1) {
+			game.board[game.opponent.y][game.opponent.x] = 1;
+			game.opponent += move;
+			game.board[game.opponent.y][game.opponent.x] = '2';
 			return true;
+		}
 		else
 			return false;
 	}
 }
 
-inline bool checkValidCellMove(GameState game, int move) {
-	if ((game.board & 1LL<<move) && move!=game.player && move!=game.opponent)
+inline bool makeValidCellMove(GameState &game, point move) {
+	if (game.board[move.y][move.x]==1) {
+		game.board[move.y][move.x] = 0;
 		return true;
+	}
 	else
 		return false;
 }
 
-inline int evaluate(GameState game, bool maximizingPlayer) {
+inline void undoBotMove(GameState &game, point move, bool maximizingPlayer) {
+	if (maximizingPlayer) {
+		game.board[game.player.y][game.player.x] = 1;
+		game.player -= move;
+		game.board[game.player.y][game.player.x] = '1';
+	}
+	else {
+		game.board[game.opponent.y][game.opponent.x] = 1;
+		game.opponent -= move;
+		game.board[game.opponent.y][game.opponent.x] = '2';
+	}
+}
+
+inline void undoCellMove(GameState &game, point move) {
+	game.board[move.y][move.x] = 1;
+}
+
+inline int evaluate(GameState &game) {
+
+	int maxMov = 0, minMov = 0;
+	REP(i, 9) {
+		point neighbourMax = game.player+dir[i], neighbourMin = game.opponent+dir[i];
+		maxMov += game.board[neighbourMax.y][neighbourMax.x];
+		minMov += game.board[neighbourMin.y][neighbourMin.x];
+	}
+	return maxMov - minMov;
+
+}
+
+inline bool playerStuck(GameState &game, bool maximizingPlayer) {
 
 	if (maximizingPlayer) {
-		int res = 0;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer))
-					res++;
-			}
-		}
-		return res;
-	}
-	else {
-		int res = 0;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer))
-					res++;
-			}
-		}
-		return res;
-	}
-
-}
-
-inline bool playerStuck(GameState game, bool player) {
-	if (player) {
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.opponent)
-					return false;
-			}
+		REP(i, 9) {
+			point neighbour = game.player+dir[i];
+			if (game.board[neighbour.y][neighbour.x] == 1)
+				return false;
 		}
 		return true;
 	}
 	else {
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.player)
-					return false;
-			}
+		REP(i, 9) {
+			point neighbour = game.opponent+dir[i];
+			if (game.board[neighbour.y][neighbour.x] == 1)
+				return false;
 		}
 		return true;
 	}
 }
 
-int minimax(GameState game, int depth, int alpha, int beta, bool maximizingPlayer) {
+int minimax(GameState &game, int depth, int alpha, int beta, bool maximizingPlayer) {
 
+	// Evaluation if Leaf Node
 	if (maximizingPlayer && playerStuck(game, true)) {
-		return -100+depth;
+		return -1000+depth;
 	}
 	else if (!maximizingPlayer && playerStuck(game, false)) {
-		return 100-depth;
+		return 1000-depth;
 	}
 	else if (depth == MAX_DEPTH) {
-		return 0;
+		return evaluate(game);
 	}
 
 	if (maximizingPlayer) {
 		int val = MIN;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
-					GameState cur = game;
-					cur.player = newPos;
-					REP(k, SIZE*SIZE) {
-						if (checkValidCellMove(cur, k)) {
-							cur.board ^= 1LL<<k;
-							val = max(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
-							alpha = max(alpha, val);
-							if (beta<=alpha)
-								break;
-						}
+		REP(i, 9) {
+			if (makeValidBotMove(game, dir[i], maximizingPlayer)) {
+				REP(j, 49) {
+					if (makeValidCellMove(game, cell[j])) {
+						val = max(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
+						undoCellMove(game, cell[j]);
+						alpha = max(alpha, val);
+						if (beta<=alpha)
+							break;
 					}
 				}
+				undoBotMove(game, dir[i], maximizingPlayer);
 			}
 		}
 		return val;
 	}
 	else {
 		int val = MAX;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
-					GameState cur = game;
-					cur.opponent = newPos;
-					REP(k, SIZE*SIZE) {
-						if (checkValidCellMove(game, k)) {
-							cur.board ^= 1LL<<k;
-							val = min(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
-							beta = min(beta, val);
-							if (beta<=alpha)
-								break;
-						}
+		REP(i, 9) {
+			if (makeValidBotMove(game, dir[i], maximizingPlayer)) {
+				REP(j, 49) {
+					if (makeValidCellMove(game, cell[j])) {
+						val = min(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
+						undoCellMove(game, cell[j]);
+						beta = min(beta, val);
+						if (beta<=alpha)
+							break;
 					}
 				}
+				undoBotMove(game, dir[i], maximizingPlayer);
 			}
 		}
 		return val;
 	}
 }
 
-void printBestMove(GameState game) {
+void printBestMove(GameState &game) {
 
-	int maxVal = MIN;
-	GameMove bestMove;
-	FOR(i, -1, 1) {
-		FOR(j, -1, 1) {
-			int newPos = game.player+i*SIZE+j;
-			if (checkValidBotMove(game, newPos, true)) {
-				GameState cur = game;
-				cur.player = newPos;
-				REP(k, SIZE*SIZE) {
-					if (checkValidCellMove(cur, k)) {
-						cur.board ^= 1LL<<k;
-						int curVal = minimax(cur, 1, maxVal, MAX, false);
-						if (curVal > maxVal) {
-							maxVal = curVal;
-							bestMove.cell = k;
-							bestMove.bot = newPos;
-						}
+	REP(i, 9) {
+		if (makeValidBotMove(game, dir[i], true)) {
+			REP(j, 49) {
+				if (makeValidCellMove(game, cell[j])) {
+					int curVal = minimax(game, 1, maxVal, MAX, false);
+					undoCellMove(game, cell[j]);
+					if (curVal > maxVal) {
+						maxVal = curVal;
+						bestBotMove = dir[i];
+						bestCellMove = cell[j];
 					}
 				}
 			}
+			undoBotMove(game, dir[i], true);
 		}
 	}
 
-	printf("%d %d\n", bestMove.bot/SIZE, bestMove.bot%SIZE);
-	printf("%d %d\n", bestMove.cell/SIZE, bestMove.cell%SIZE);
+	point BotMove = bestBotMove+game.player-offset;
+	point CellMove = bestCellMove-offset;
+	printf("%d %d\n", BotMove.y, BotMove.x);
+	printf("%d %d\n", CellMove.y, CellMove.x);
 
 }
 
 int main() {
 
-	GameState original;
-	original.board = 0;
-	int x, p1, p2;
-	REP(i, SIZE*SIZE) {
-		scanf("%d", &x);
-		if (x!=-1) {
-			original.board |= 1LL<<i;
-			if (x==1)
-				p1 = i;
-			else if (x==2)
-				p2 = i;
+	GameState game;
+	int x;
+	point p1, p2;
+
+	//Reading Board Input
+	REP(i, SIZE_EX) {
+		REP(j, SIZE_EX) {
+			if (i<off || j<off || i>=SIZE_EX-off || j>=SIZE_EX-off) {
+				game.board[i][j] = 0;
+				continue;
+			}
+			scanf("%d", &x);
+			if (x==-1) {
+				game.board[i][j] = 0;
+			}
+			else if (x==0) {
+				game.board[i][j] = 1;
+			}
+			else if (x==1) {
+				p1 = { j, i };
+				game.board[i][j] = '1';
+			}
+			else if (x==2) {
+				p2 = { j, i };
+				game.board[i][j] = '2';
+			}
 		}
 	}
 
+	//Setting Player and Opponent
 	scanf("%d", &player);
 	if (player==1) {
-		original.player = p1;
-		original.opponent = p2;
+		game.player = p1;
+		game.opponent = p2;
+		opponent = 2;
 	}
 	else {
-		original.player = p2;
-		original.opponent = p1;
+		game.player = p2;
+		game.opponent = p1;
+		opponent = 1;
 	}
 
-	printBestMove(original);
+	printBestMove(game);
 
 	sp;
 	return 0;
 
 }
-
-//Somewhat Solved

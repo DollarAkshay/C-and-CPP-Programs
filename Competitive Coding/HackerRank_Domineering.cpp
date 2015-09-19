@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerrank.com/challenges/domineering
+//https://www.hackerearth.com/battle-of-bots/multiplayer/isola/
 
 #include <math.h>
 #include <time.h>
@@ -42,152 +42,146 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-#define SIZE 8
 
-inline bool canPlace(char board[SIZE][SIZE], register int x, register int y, register char type) {
-	if (type=='v') {
-		if (y>=0 && y<SIZE-1 && board[y][x]=='-' && board[y+1][x]=='-')
+struct GameMove {
+	int cell, bot;
+};
+
+struct GameState {
+	ll int board;
+	int player, opponent;
+};
+
+const int SIZE = 4;
+const int MIN = 1<<31;
+const int MAX = ~0 - MIN;
+int MAX_DEPTH = 6;
+
+int player, opponent;
+
+inline bool checkValidBotMove(GameState game, int move, bool player) {
+	if (player) {
+		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%7-game.player%SIZE)<=1 && abs(move/SIZE-game.player/SIZE)<=1 && (game.board&1LL<<move))
 			return true;
 		else
 			return false;
 	}
 	else {
-		if (x>=0 && x<SIZE-1 && board[y][x]=='-' && board[y][x+1]=='-')
+		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%SIZE-game.opponent%SIZE)<=1 && abs(move/SIZE-game.opponent/SIZE)<=1 && (game.board&1LL<<move))
 			return true;
 		else
 			return false;
 	}
 }
 
-struct point {
-	int x, y;
-};
-
-struct GameState {
-	char board[SIZE][SIZE];
-	bool moveV[SIZE][SIZE];
-	bool moveH[SIZE][SIZE];
-	int movesH = 0, movesV = 0;
-
-	inline void setMoveH(int x, int y, bool val) {
-		if (x>=0 && y>=0 && moveH[y][x]!=val) {
-			moveH[y][x] = val;
-			val==1?movesH++:movesH--;
-		}
-	}
-	inline void setMoveV(int x, int y, bool val) {
-		if (x>=0 && y>=0 && moveV[y][x]!=val) {
-			moveV[y][x] = val;
-			val==1?movesV++:movesV--;
-		}
-	}
-	inline void addMove(point p, char player) {
-		if (player=='v') {
-			board[p.y][p.x] = player;
-			board[p.y+1][p.x] = player;
-			setMoveV(p.x, p.y-1, 0);
-			setMoveV(p.x, p.y, 0);
-			setMoveV(p.x, p.y+1, 0);
-			setMoveH(p.x, p.y, 0);
-			setMoveH(p.x, p.y+1, 0);
-			setMoveH(p.x-1, p.y, 0);
-			setMoveH(p.x-1, p.y+1, 0);
-		}
-		else {
-			board[p.y][p.x] = player;
-			board[p.y][p.x+1] = player;
-			setMoveH(p.x-1, p.y, 0);
-			setMoveH(p.x, p.y, 0);
-			setMoveH(p.x+1, p.y, 0);
-			setMoveV(p.x, p.y, 0);
-			setMoveV(p.x+1, p.y, 0);
-			setMoveV(p.x, p.y-1, 0);
-			setMoveV(p.x+1, p.y-1, 0);
-		}
-	}
-	inline void removeMove(point p, char player) {
-		if (player=='v') {
-			board[p.y][p.x] = '-';
-			board[p.y+1][p.x] = '-';
-			setMoveV(p.x, p.y-1, canPlace(board, p.x, p.y-1, 'v'));
-			setMoveV(p.x, p.y, canPlace(board, p.x, p.y, 'v'));
-			setMoveV(p.x, p.y+1, canPlace(board, p.x, p.y+1, 'v'));
-			setMoveH(p.x, p.y, canPlace(board, p.x, p.y, 'h'));
-			setMoveH(p.x, p.y+1, canPlace(board, p.x, p.y+1, 'h'));
-			setMoveH(p.x-1, p.y, canPlace(board, p.x-1, p.y, 'h'));
-			setMoveH(p.x-1, p.y+1, canPlace(board, p.x-1, p.y+1, 'h'));
-		}
-		else {
-			board[p.y][p.x] = '-';
-			board[p.y][p.x+1] = '-';
-			setMoveH(p.x-1, p.y, canPlace(board, p.x-1, p.y, 'h'));
-			setMoveH(p.x, p.y, canPlace(board, p.x, p.y, 'h'));
-			setMoveH(p.x+1, p.y, canPlace(board, p.x+1, p.y, 'h'));
-			setMoveV(p.x, p.y, canPlace(board, p.x, p.y, 'v'));
-			setMoveV(p.x+1, p.y, canPlace(board, p.x+1, p.y, 'v'));
-			setMoveV(p.x, p.y-1, canPlace(board, p.x, p.y-1, 'v'));
-			setMoveV(p.x+1, p.y-1, canPlace(board, p.x+1, p.y-1, 'v'));
-		}
-	}
-};
-
-const int MIN = 1<<31;
-const int MAX = ~0 - MIN;
-int MAX_DEPTH = 6;
-char player, opponent;
-int turn;
-int calls[100], totalCalls;
-
-inline int evaluate(register GameState &game, register bool maximizingPlayer) {
-
-	if (maximizingPlayer && ((player=='v' && game.movesV==0) || (player=='h' && game.movesH==0)))
-		return -100 - (player=='v'?game.movesH:game.movesV);
-	else if (!maximizingPlayer && ((opponent=='v' && game.movesV==0) || (opponent=='h' && game.movesH==0)))
-		return 100 + (opponent=='v'?game.movesH:game.movesV);
+inline bool checkValidCellMove(GameState game, int move) {
+	if ((game.board & 1LL<<move) && move!=game.player && move!=game.opponent)
+		return true;
 	else
-		return player=='v'?game.movesV-game.movesH:game.movesH-game.movesV;
+		return false;
+}
+
+inline int evaluate(GameState game, bool maximizingPlayer) {
+
+	if (maximizingPlayer) {
+		int res = 0;
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.player+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, maximizingPlayer))
+					res++;
+			}
+		}
+		return res;
+	}
+	else {
+		int res = 0;
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.opponent+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, maximizingPlayer))
+					res++;
+			}
+		}
+		return res;
+	}
 
 }
 
-int minimax(register GameState &game, register int depth, register int alpha, register int beta, register bool maximizingPlayer) {
+inline bool playerStuck(GameState game, bool player) {
+	if (player) {
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.player+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.opponent)
+					return false;
+			}
+		}
+		return true;
+	}
+	else {
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.opponent+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.player)
+					return false;
+			}
+		}
+		return true;
+	}
+}
 
-	calls[depth]++;
+int minimax(GameState game, int depth, int alpha, int beta, bool maximizingPlayer) {
 
-	if (depth == MAX_DEPTH ||
-		(maximizingPlayer && ((player=='v' && game.movesV==0) || (player=='h' && game.movesH==0))) ||
-		(!maximizingPlayer && ((opponent=='v' && game.movesV==0) || (opponent=='h' && game.movesH==0)))) {
+	if (maximizingPlayer && playerStuck(game, true)) {
+		return -100+depth;
+	}
+	else if (!maximizingPlayer && playerStuck(game, false)) {
+		return 100-depth;
+	}
+	else if (depth == MAX_DEPTH) {
 		return evaluate(game, maximizingPlayer);
 	}
 
 	if (maximizingPlayer) {
-		register int val = MIN;
-		REP(i, SIZE) {
-			REP(j, SIZE) {
-				if ((player=='v' && game.moveV[i][j]) || (player=='h' && game.moveH[i][j])) {
-					point move = { j, i };
-					game.addMove(move, player);
-					val = max(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
-					game.removeMove(move, player);
-					alpha = max(alpha, val);
-					if (beta<=alpha)
-						break;
+		int val = MIN;
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.player+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
+					GameState cur = game;
+					cur.player = newPos;
+					REP(k, SIZE*SIZE) {
+						if (checkValidCellMove(cur, k)) {
+							cur.board ^= 1LL<<k;
+							val = max(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
+							alpha = max(alpha, val);
+							if (beta<=alpha)
+								break;
+						}
+					}
 				}
 			}
 		}
 		return val;
 	}
 	else {
-		register int val = MAX;
-		REP(i, SIZE) {
-			REP(j, SIZE) {
-				if ((opponent=='v' && game.moveV[i][j]) || (opponent=='h' && game.moveH[i][j])) {
-					point move = { j, i };
-					game.addMove(move, opponent);
-					val = min(val, minimax(game, depth+1, alpha, beta, !maximizingPlayer));
-					game.removeMove(move, opponent);
-					beta = min(beta, val);
-					if (beta<=alpha)
-						break;
+		int val = MAX;
+		FOR(i, -1, 1) {
+			FOR(j, -1, 1) {
+				int newPos = game.opponent+i*SIZE+j;
+				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
+					GameState cur = game;
+					cur.opponent = newPos;
+					REP(k, SIZE*SIZE) {
+						if (checkValidCellMove(game, k)) {
+							cur.board ^= 1LL<<k;
+							val = min(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
+							beta = min(beta, val);
+							if (beta<=alpha)
+								break;
+						}
+					}
 				}
 			}
 		}
@@ -195,85 +189,67 @@ int minimax(register GameState &game, register int depth, register int alpha, re
 	}
 }
 
-point getBestMove(register GameState &game) {
+void printBestMove(GameState game) {
 
-	MAX_DEPTH += turn/10;
-	DB("Max Depth = %d\n", MAX_DEPTH);
-	register int maxVal = MIN;
-	register point bestMove;
-
-	REP(i, SIZE) {
-		REP(j, SIZE) {
-			if ((player=='v' && game.moveV[i][j]) || (player=='h' && game.moveH[i][j])) {
-				register point move = { j, i };
-				game.addMove(move, player);
-				int moveVal = minimax(game, 1, maxVal, MAX, false);
-				game.removeMove(move, player);
-				if (moveVal>maxVal) {
-					maxVal = moveVal;
-					bestMove = move;
+	int maxVal = MIN;
+	GameMove bestMove;
+	FOR(i, -1, 1) {
+		FOR(j, -1, 1) {
+			int newPos = game.player+i*SIZE+j;
+			if (checkValidBotMove(game, newPos, true)) {
+				GameState cur = game;
+				cur.player = newPos;
+				REP(k, SIZE*SIZE) {
+					if (checkValidCellMove(cur, k)) {
+						cur.board ^= 1LL<<k;
+						int curVal = minimax(cur, 1, maxVal, MAX, false);
+						if (curVal > maxVal) {
+							maxVal = curVal;
+							bestMove.cell = k;
+							bestMove.bot = newPos;
+						}
+					}
 				}
 			}
 		}
 	}
-	DB("Value of Best Move = %d\n\n", maxVal);
 
-	if (maxVal>=100)
-		DB("I WON !! I WON !! :D\n");
-	else if (maxVal>0)
-		DB("You might loose :P\n");
-	else if (maxVal<=-100)
-		DB("I LOST :'( \n");
+	printf("%d %d\n", bestMove.bot/SIZE, bestMove.bot%SIZE);
+	printf("%d %d\n", bestMove.cell/SIZE, bestMove.cell%SIZE);
 
-
-	return bestMove;
 }
 
 int main() {
 
-	register GameState game;
-	scanf("%c", &player);
-	opponent = player=='h'?'v':'h';
-
-	REP(i, SIZE) {
-		getchar();
-		scanf("%s", game.board[i]);
-		REP(j, SIZE) {
-			if (game.board[i][j]!='-')
-				turn++;
+	GameState original;
+	original.board = 0;
+	int x, p1, p2;
+	REP(i, SIZE*SIZE) {
+		scanf("%d", &x);
+		if (x!=-1) {
+			original.board |= 1LL<<i;
+			if (x==1)
+				p1 = i;
+			else if (x==2)
+				p2 = i;
 		}
 	}
 
-	turn /= 2;
-	DB("Turn No : %d\n", turn);
-	MS0(game.moveH);
-	MS0(game.moveV);
-	REP(i, SIZE) {
-		REP(j, SIZE) {
-			game.setMoveH(j, i, canPlace(game.board, j, i, 'h'));
-			game.setMoveV(j, i, canPlace(game.board, j, i, 'v'));
-		}
+	scanf("%d", &player);
+	if (player==1) {
+		original.player = p1;
+		original.opponent = p2;
+	}
+	else {
+		original.player = p2;
+		original.opponent = p1;
 	}
 
+	printBestMove(original);
 
-	clock_t t = clock();
-	point move = getBestMove(game);
-	DB("Time Taken = %lf\n", (double)(clock() - t)/CLOCKS_PER_SEC);
-
-	printf("%d %d\n", move.y, move.x);
-
-	
-	DB("\nFunction Calls :");
-	FOR(i, 1, 100) {
-		totalCalls += calls[i];
-		if (calls[i]==0)
-			break;
-		else
-			DB("%d, ", calls[i]);
-	}
-	DB("\nTotal Function Calls : %d\n", totalCalls);
-	
+	sp;
 	return 0;
+
 }
 
-//Improved my Efficiency like crazy
+//

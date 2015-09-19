@@ -1,8 +1,8 @@
 /*~~~~~~~~~~~~~~~~~~*
-*                  *
-* $Dollar Akshay$  *
-*                  *
-*~~~~~~~~~~~~~~~~~~*/
+ *                  *
+ * $Dollar Akshay$  *
+ *                  *
+ *~~~~~~~~~~~~~~~~~~*/
 
 //https://www.hackerearth.com/code-monk-bit-manipulation/algorithm/monk-and-his-friend/
 
@@ -41,11 +41,11 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int main() {
+int main(){
 
 	ll int t, n, m;
 	scanf("%lld", &t);
-	REP(tc, t) {
+	REP(tc, t){
 		scanf("%lld%lld", &n, &m);
 		bitset<64> bits(n^m);
 		printf("%d\n", bits.count());
