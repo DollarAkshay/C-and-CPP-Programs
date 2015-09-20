@@ -38,6 +38,9 @@ int main(){
 	printf("Enter number of steps : ");
 	scanf("%d", &n);
 	printf("Number of ways = %d\n", ways(n));
+
+	for (int i = 1; i <=n; i++)
+		printf(", %d", DP[i]);
 	sp;
 	return 0;
 }
