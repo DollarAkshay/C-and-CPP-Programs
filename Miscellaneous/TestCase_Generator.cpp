@@ -31,29 +31,34 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
+FILE *fp = fopen("testcase.txt", "w");
+
+void randomLowerString(int len) {
+
+	REP(i, len) 
+		fprintf(fp, "%c", 'a'+rand()%26);
+	fprintf(fp, "\n");
+
+}
+
+void randomUpperString(int len) {
+
+	REP(i, len)
+		fprintf(fp, "%c", 'A'+rand()%26);
+	fprintf(fp, "\n");
+
+}
+
 int main(){
 
 	srand(time(NULL));
-	FILE *fp = fopen("testcase.txt", "w");
 
-	int n = 1000000,m =100;
-	fprintf(fp, "%d\n",n);
-	REP(i, n){
-		int x = (int)rand()*rand();
-		while (x>1000000000){
-			x = (int)rand()*rand();
-			printf(".");
-		}
-		fprintf(fp, "%d ", x);
-	}
-	fprintf(fp, "\n");
-	/*
-	REP(i, m){
-		int l = rand()%(n/2);
-		int r = min(n-1, l+rand()%(n/2));
-		fprintf(fp, "%d %d\n", l+1, r+1);
-	}
-	*/
+
+	int n = 1000;
+	int t = rand()%n;
+	fprintf(fp, "%d %d\n",n, t);
+	randomLowerString(n);
+	randomLowerString(n);
 	fclose(fp);
 	printf("Done\n");
 	sp;
