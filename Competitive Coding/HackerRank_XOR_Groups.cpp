@@ -4,7 +4,7 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
-//http://codeforces.com/contest/586/problem/D
+//https://www.hackerrank.com/contests/hourrank-1/challenges/xor-groups
 
 #include <math.h>
 #include <time.h>
@@ -42,41 +42,13 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-struct point {
-	int x, y;
-};
+int a[100005];
+int XOR[100005];
 
-char graph[3][500];
-
-bool DFS(point s,int n,int train) {
-
-	if (graph[s.y][s.x]!='.' || s.x>=n || s.y<0 || s.y>2)
-		return false;
-
-	if (s.x==n-1 && graph[s.y][s.x]=='.')
-		return true;
-
-
-	if (train==0) {
-		return DFS({ s.x+1, s.y }, n, (train+1)%4);
-	}
-	if (train==1) {
-		bool dir[3];
-		dir[0] = DFS({ s.x, s.y-1 }, n, (train+1)%4);
-		if (dir[0])
-			return true;
-		dir[1] = DFS({ s.x, s.y }, n, (train+1)%4);
-		if (dir[1])
-			return true;
-		dir[2] = DFS({ s.x, s.y+1 }, n, (train+1)%4);
-		if (dir[2])
-			return true;
-		return false;
-	}
-	else {
-		return DFS({ s.x+1, s.y}, n, (train+1)%4 );
-	}
-
+int XORLR(int l, int r) {
+	if (r<0)
+		return 0;
+	return XOR[l]^XOR[r+1];
 }
 
 int main(){
@@ -84,26 +56,18 @@ int main(){
 	int n;
 	scanf("%d", &n);
 	REP(i, n) {
-		int k, t;
-		point start;
-		scanf("%d %d", &k, &t);
-		scanf("%s", graph[0]);
-		scanf("%s", graph[1]);
-		scanf("%s", graph[2]);
-
-		if (graph[0][0]=='s') 
-			start = { 0, 0 };
-		else if (graph[1][0]=='s')
-			start = { 0, 1 };
-		else if (graph[2][0]=='s')
-			start = { 0, 2 };
-		else
-			assert(1==0);
-
-		graph[start.y][start.x] = '.';
-
-		puts(DFS(start, k, 0)?"YES":"NO");
+		scanf("%d", &a[i]);
+		XOR[i+1] = XOR[i]^a[i];
 	}
+	ll int c = 0;
+	REP(i, n) {
+		FOR(j, i, i==n-1?n-1:n-2) {
+			if ( (XOR[i]^XOR[j+1]) == (XOR[0]^XOR[i]^XOR[j+1]^XOR[n]) )
+				c++;
+		}
+	}
+	printf("%lld\n", c%MOD);
+	sp;
 	return 0;
 }
 
