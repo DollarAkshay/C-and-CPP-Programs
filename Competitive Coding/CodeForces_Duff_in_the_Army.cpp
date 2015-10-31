@@ -1,8 +1,8 @@
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
 //http://codeforces.com/contest/588/problem/E
 
@@ -71,29 +71,34 @@ void BFS() {
 
 }
 
-void getPeople(int u, int v, int a) {
+vector<int> getPeople(int u, int v, int a) {
 
-	set<int> res;
-	res.insert(people[u].begin(), people[u].end());
-	res.insert(people[v].begin(), people[v].end());
+	vector<int> res;
+	res.insert(res.end(), people[u].begin(), people[u].end());
+	res.insert(res.end(), people[v].begin(), people[v].end());
 	while (u!=v) {
 		if (level[u]>level[v]) {
 			u = parent[u];
-			res.insert(people[u].begin(), people[u].end());
+			res.insert(res.end(), people[u].begin(), people[u].end());
 		}
 		else {
 			v = parent[v];
-			res.insert(people[v].begin(), people[v].end());
+			res.insert(res.end(), people[v].begin(), people[v].end());
 		}
 	}
 
-	int k = min((ll int)a, (ll int)res.size());
-	printf("%d ", k);
-	for (auto it = res.begin(); k; it++, k--)
-		printf("%d ", *it);
+	SORT(res, res.size());
+
+	vector<int> res2;
+	REP(i, res.size()) {
+		if (!i || (i && res[i]!=res[i-1]))
+			res2.push_back(res[i]);
+	}
+
+	return res2;
 }
 
-int main(){
+int main() {
 
 	int n, m, q;
 	scanf("%d%d%d", &n, &m, &q);
@@ -101,7 +106,7 @@ int main(){
 		int u, v;
 		scanf("%d %d", &u, &v);
 		graph[u].push_back(v);
-		graph[v].push_back(v);
+		graph[v].push_back(u);
 	}
 	REP(i, m) {
 		scanf("%d", &c[i]);
@@ -112,10 +117,14 @@ int main(){
 	REP(i, q) {
 		int u, v, a;
 		scanf("%d %d %d", &u, &v, &a);
-		getPeople(u, v, a);
+		vector<int> ids = getPeople(u, v, a);
+		int k = min((ll int)a, (ll int)ids.size());
+		printf("%d ", k);
+		REP(i, k)
+			printf("%d ", ids[i]);
 		printf("\n");
 	}
 	return 0;
 }
 
-//PreTests Passed
+//

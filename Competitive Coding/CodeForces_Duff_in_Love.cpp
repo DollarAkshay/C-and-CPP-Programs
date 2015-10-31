@@ -59,7 +59,7 @@ void calcFact(ll int n) {
 bool check(ll int n) {
 
 	int lim = sqrt(n);
-	FOR(i, 2, lim) {
+	for (ll int i = 2; i<=lim; i++) {
 		if (n%(i*i)==0)
 			return false;
 	}
@@ -81,4 +81,4 @@ int main(){
 	return 0;
 }
 
-//Pretest Passed
+//Solved
