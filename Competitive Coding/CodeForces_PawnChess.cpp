@@ -55,24 +55,32 @@ int main(){
 		w[i] = b[i] = -1;
 	}
 
+	int minA = 100, minB = 100;
+
 	REP(i, 8) {
 		REP(j, 8) {
-			if (board[j][i]=='W' && w[i]==-1)
-				w[i] = j;
-			if (board[7-j][i]=='B' && b[i]==-1)
-				b[i] = j;
+			if (board[j][i]=='B')
+				break;
+			else if (board[j][i]=='W') {
+				minA = min(minA, j);
+				break;
+			}
 		}
 	}
 
-	int minA = 100, minB = 100;
 	REP(i, 8) {
-		if (w[i]!=-1 && b[i]==-1)
-			minA = w[i];
-		else if (w[i]==-1 && b[i]!=-1)
-			minB = b[i];
+		REP(j, 8) {
+			if (board[7-j][i]=='W')
+				break;
+			else if (board[7-j][i]=='B') {
+				minB = min(minB, j);
+				break;
+			}
+		}
 	}
+
 	puts(minA<=minB?"A":"B");
 	return 0;
 }
 
-//Solved Pretests 
+//Solved ~ After the Contest

@@ -56,8 +56,9 @@ int main(){
 
 	ll int t, b, w, res, f;
 	scanf("%I64d %I64d %I64d", &t, &w, &b);
-	double full = w/gcd(b, w)*b;
 	f = gcd(b, w);
+	double full = (double)w/f*b;
+	
 	ll int lcm = w/f*b;
 
 	if (full<(double)5000000000000000000) {
@@ -66,14 +67,13 @@ int main(){
 			res -= (min(b, w) - t%lcm - 1);
 	}
 	else {
-		if(b<w)
-			res = t/(w/f) + min(b, w)-1;
-		else
-			res = t/(b/f) + min(b, w)-1;
+		res =  min(b, w)-1;
+		if (t<min(b, w))
+			res -= (min(b, w) - t - 1);
 	}
 	f = gcd(res, t);
 	printf("%I64d/%I64d\n", res/f, t/f);
 	return 0;
 }
 
-//Partially Solved ~ Integer Overflow
+//Solved ~ After the Contest
