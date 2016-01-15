@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerearth.com/battle-of-bots/multiplayer/isola/
+//https://www.hackerrank.com/challenges/domineering
 
 #include <math.h>
 #include <time.h>
@@ -42,214 +42,592 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
+#define SIZE 8
+#define SIZE_EX 10
 
-struct GameMove {
-	int cell, bot;
+#define TIME_LIMIT 1.9
+
+#define WIN_SCORE 100000
+
+#define DEPTH_MULTIPLIER 1
+
+struct point {
+	int x, y;
+	point() {
+		x = 0;
+		y = 0;
+	}
+	point(int px, int py) {
+		x = px;
+		y = py;
+	}
+	inline point operator +(const point &lhs) {
+		point t = *this;
+		t += lhs;
+		return t;
+	}
+	inline point operator -(const point &lhs) {
+		point t = *this;
+		t -= lhs;
+		return t;
+	}
+	inline point operator *(const int &val) {
+		point t = *this;
+		t *= val;
+		return t;
+	}
+	inline void operator +=(const point &lhs) {
+		x += lhs.x;
+		y += lhs.y;
+	}
+	inline void operator -=(const point &lhs) {
+		x -= lhs.x;
+		y -= lhs.y;
+	}
+	inline void operator *=(const int &val) {
+		x *= val;
+		y *= val;
+	}
+	inline bool operator ==(const point &lhs) const {
+		return x==lhs.x && y==lhs.y;
+	}
+	inline bool operator !=(const point &lhs) const {
+		return x!=lhs.x || y!=lhs.y;
+	}
+	inline double distance(const point &lhs) const {
+		return sqrt((x-lhs.x)*(x-lhs.x)+(y-lhs.y)*(y-lhs.y));
+	}
+};
+
+struct Score {
+	int value, depth;
+	Score() {
+		depth = -1;
+	}
+	Score(int v, int d) {
+		value = v;
+		depth = d;
+	}
+	inline bool operator >(const Score &rhs) const {
+		return (value>rhs.value) || (value==rhs.value && depth>rhs.depth);
+	}
+	inline bool operator <(const Score &rhs) const {
+		return (value<rhs.value) || (value==rhs.value && depth<rhs.depth);
+	}
+};
+
+struct ScoredMove {
+	Score score;
+	point move;
+	ScoredMove() {
+
+	}
+	ScoredMove(Score s, point p) {
+		score = s;
+		move = p;
+	}
+	ScoredMove(Score s) {
+		score = s;
+	}
 };
 
 struct GameState {
-	ll int board;
-	int player, opponent;
+	int turn;
+	int movesLeftPlayer, movesLeftOpponent;
+	int playerMoves[SIZE_EX][SIZE_EX];
+	int opponentMoves[SIZE_EX][SIZE_EX];
+	char board[SIZE_EX][SIZE_EX];
 };
 
-const int SIZE = 4;
 const int MIN = 1<<31;
 const int MAX = ~0 - MIN;
-int MAX_DEPTH = 6;
+const point offset = { 1, 1 };
 
-int player, opponent;
+char player, opponent;
+int maxDepth;
+int nodesEvaluated;
+float maxDepthReached;
+clock_t time_elapsed;
+ScoredMove bestMoveOverall;
 
-inline bool checkValidBotMove(GameState game, int move, bool player) {
-	if (player) {
-		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%7-game.player%SIZE)<=1 && abs(move/SIZE-game.player/SIZE)<=1 && (game.board&1LL<<move))
+inline void printBestMove() {
+
+	printf("%d %d\n", bestMoveOverall.move.y-offset.y, bestMoveOverall.move.x-offset.x);
+
+	//Extra Debug Statements
+	DB("D=%.4f ", maxDepthReached);
+	DB("N=%d ", nodesEvaluated);
+	DB("V=%d \n", bestMoveOverall.score.value);
+	if (bestMoveOverall.score.value>WIN_SCORE*0.9)
+		DB("I win ^_^ ?\n");
+	else if (bestMoveOverall.score.value<-WIN_SCORE*0.9)
+		DB("I loose -_- ?\n");
+}
+
+inline void checkTime() {
+
+	if (((double)clock()-time_elapsed)/CLOCKS_PER_SEC >= TIME_LIMIT) {
+		printBestMove();
+		printf("FE\n");
+		sp;
+		exit(EXIT_SUCCESS);
+	}
+
+}
+
+inline bool canMove(GameState &game, point m, char player) {
+
+	if (player=='v') {
+		if (m.y>=SIZE_EX-2 || (game.board[m.y][m.x]!='-' && game.board[m.y+1][m.x]!='-'))
+			return false;
+		if (game.board[m.y][m.x]=='-' && game.board[m.y+1][m.x]=='-')
 			return true;
 		else
 			return false;
 	}
 	else {
-		if (move>=0 && move<=48 && game.player!=move && game.opponent!=move && abs(move%SIZE-game.opponent%SIZE)<=1 && abs(move/SIZE-game.opponent/SIZE)<=1 && (game.board&1LL<<move))
+		if (m.x>=SIZE_EX-2)
+			return false;
+		if (game.board[m.y][m.x]=='-' && game.board[m.y][m.x+1]=='-')
 			return true;
 		else
 			return false;
 	}
+
 }
 
-inline bool checkValidCellMove(GameState game, int move) {
-	if ((game.board & 1LL<<move) && move!=game.player && move!=game.opponent)
-		return true;
-	else
-		return false;
+void preCalculateMoves(GameState &game) {
+
+	MS0(game.playerMoves);
+	MS0(game.opponentMoves);
+	game.turn = 0;
+	game.movesLeftPlayer = 0;
+	game.movesLeftOpponent = 0;
+
+	FOR(i, offset.y, SIZE_EX-offset.y-1) {
+		FOR(j, offset.x, SIZE_EX-offset.x-1) {
+			if (canMove(game, { j, i }, player)) {
+				game.playerMoves[i][j] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (canMove(game, { j, i }, opponent)) {
+				game.opponentMoves[i][j] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (game.board[i][j]=='v' || game.board[i][j]=='h')
+				game.turn++;
+		}
+	}
+	game.turn /= 2;
 }
 
-inline int evaluate(GameState game, bool maximizingPlayer) {
+inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
+
+	game.turn++;
 
 	if (maximizingPlayer) {
-		int res = 0;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer))
-					res++;
+		if (player=='v') {
+			game.playerMoves[m.y][m.x] = 0;
+			game.movesLeftPlayer--;
+
+			if (canMove(game, { m.x, m.y+1 }, player)) {
+				game.playerMoves[m.y+1][m.x] = 0;
+				game.movesLeftPlayer--;
 			}
+			if (canMove(game, { m.x, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x] = 0;
+				game.movesLeftOpponent--;
+			}
+			if (canMove(game, { m.x, m.y+1 }, opponent)) {
+				game.opponentMoves[m.y+1][m.x] = 0;
+				game.movesLeftOpponent--;
+			}
+
+			if (m.x>=offset.x) {
+				if (canMove(game, { m.x-1, m.y }, opponent)) {
+					game.opponentMoves[m.y][m.x-1] = 0;
+					game.movesLeftOpponent--;
+				}
+				if (canMove(game, { m.x-1, m.y+1 }, opponent)) {
+					game.opponentMoves[m.y+1][m.x-1] = 0;
+					game.movesLeftOpponent--;
+				}
+			}
+			if (m.y>offset.y && canMove(game, { m.x, m.y-1 }, player)) {
+				game.playerMoves[m.y-1][m.x] = 0;
+				game.movesLeftPlayer--;
+			}
+			game.board[m.y][m.x] = player;
+			game.board[m.y+1][m.x] = player;
 		}
-		return res;
+		else {
+			game.playerMoves[m.y][m.x] = 0;
+			game.movesLeftPlayer--;
+
+			if (canMove(game, { m.x+1, m.y }, player)) {
+				game.playerMoves[m.y][m.x+1] = 0;
+				game.movesLeftPlayer--;
+			}
+			if (canMove(game, { m.x, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x] = 0;
+				game.movesLeftOpponent--;
+			}
+			if (canMove(game, { m.x+1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x+1] = 0;
+				game.movesLeftOpponent--;
+			}
+
+			if (m.y>=offset.y) {
+				if (canMove(game, { m.x, m.y-1 }, opponent)) {
+					game.opponentMoves[m.y-1][m.x] = 0;
+					game.movesLeftOpponent--;
+				}
+				if (canMove(game, { m.x+1, m.y-1 }, opponent)) {
+					game.opponentMoves[m.y-1][m.x+1] = 0;
+					game.movesLeftOpponent--;
+				}
+			}
+			if (m.x>offset.x && canMove(game, { m.x-1, m.y }, player)) {
+				game.playerMoves[m.y][m.x-1] = 0;
+				game.movesLeftPlayer--;
+			}
+			game.board[m.y][m.x] = player;
+			game.board[m.y][m.x+1] = player;
+		}
 	}
+
+
 	else {
-		int res = 0;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer))
-					res++;
+		if (opponent=='v') {
+			game.opponentMoves[m.y][m.x] = 0;
+			game.movesLeftOpponent--;
+
+			
+			if (canMove(game, { m.x, m.y-1 }, opponent)) {
+				game.opponentMoves[m.y+1][m.x] = 0;
+				game.movesLeftOpponent--;
 			}
+			if (canMove(game, { m.x, m.y }, player)) {
+				game.playerMoves[m.y][m.x] = 0;
+				game.movesLeftPlayer--;
+			}
+			if (canMove(game, { m.x, m.y+1 }, player)) {
+				game.playerMoves[m.y+1][m.x] = 0;
+				game.movesLeftPlayer--;
+			}
+
+			if (m.x>=offset.x) {
+				if (canMove(game, { m.x-1, m.y }, player)) {
+					game.playerMoves[m.y][m.x-1] = 0;
+					game.movesLeftPlayer--;
+				}
+				if (canMove(game, { m.x-1, m.y+1 }, player)) {
+					game.playerMoves[m.y+1][m.x-1] = 0;
+					game.movesLeftPlayer--;
+				}
+			}
+			if (m.y>offset.y && canMove(game, { m.x, m.y-1 }, opponent)) {
+				game.opponentMoves[m.y-1][m.x] = 0;
+				game.movesLeftOpponent--;
+			}
+
+			game.board[m.y][m.x] = opponent;
+			game.board[m.y+1][m.x] = opponent;//
 		}
-		return res;
+		else {
+			game.opponentMoves[m.y][m.x] = 0;
+			game.movesLeftOpponent--;
+			
+			if (canMove(game, { m.x+1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x+1] = 0;
+				game.movesLeftOpponent--;
+			}
+			if (canMove(game, { m.x, m.y }, player)) {
+				game.playerMoves[m.y][m.x] = 0;
+				game.movesLeftPlayer--;
+			}
+			if (canMove(game, { m.x+1, m.y }, player)) {
+				game.playerMoves[m.y][m.x+1] = 0;
+				game.movesLeftPlayer--;
+			}
+
+			if (m.y>=offset.y) {
+				if (canMove(game, { m.x, m.y-1 }, player)) {
+					game.playerMoves[m.y-1][m.x] = 0;
+					game.movesLeftPlayer--;
+				}
+				if (canMove(game, { m.x+1, m.y-1 }, player)) {
+					game.playerMoves[m.y-1][m.x+1] = 0;
+					game.movesLeftPlayer--;
+				}
+			}
+			if (m.x>offset.x && canMove(game, { m.x-1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x-1] = 0;
+				game.movesLeftOpponent--;
+			}
+			game.board[m.y][m.x] = opponent;
+			game.board[m.y][m.x+1] = opponent;
+		}
 	}
 
 }
 
-inline bool playerStuck(GameState game, bool player) {
-	if (player) {
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.opponent)
-					return false;
+inline void undoMove(GameState &game, point m, bool maximizingPlayer) {
+
+	game.turn--;
+
+	if (maximizingPlayer) {
+		if (player=='v') {
+			game.board[m.y][m.x] = '-';
+			game.board[m.y+1][m.x] = '-';
+
+			game.playerMoves[m.y][m.x] = 1;
+			game.movesLeftPlayer++;
+
+			if (canMove(game, { m.x, m.y+1 }, player)) {
+				game.playerMoves[m.y+1][m.x] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (canMove(game, { m.x, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (canMove(game, { m.x, m.y+1 }, opponent)) {
+				game.opponentMoves[m.y+1][m.x] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (m.x>=offset.x) {
+				if (canMove(game, { m.x-1, m.y }, opponent)) {
+					game.opponentMoves[m.y][m.x-1] = 1;
+					game.movesLeftOpponent++;
+				}
+				if (canMove(game, { m.x-1, m.y+1 }, opponent)) {
+					game.opponentMoves[m.y+1][m.x-1] = 1;
+					game.movesLeftOpponent++;
+				}
+			}
+			if (m.y>offset.y && canMove(game, { m.x, m.y-1 }, player)) {
+				game.playerMoves[m.y-1][m.x] = 1;
+				game.movesLeftPlayer++;
 			}
 		}
-		return true;
+		else {
+			game.board[m.y][m.x] = '-';
+			game.board[m.y][m.x+1] = '-';
+
+			game.playerMoves[m.y][m.x] = 1;
+			game.movesLeftPlayer++;
+
+			if (canMove(game, { m.x+1, m.y }, player)) {
+				game.playerMoves[m.y][m.x+1] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (canMove(game, { m.x, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (canMove(game, { m.x+1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x+1] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (m.y>=offset.y) {
+				if (canMove(game, { m.x, m.y-1 }, opponent)) {
+					game.opponentMoves[m.y-1][m.x] = 1;
+					game.movesLeftOpponent++;
+				}
+				if (canMove(game, { m.x+1, m.y-1 }, opponent)) {
+					game.opponentMoves[m.y-1][m.x+1] = 1;
+					game.movesLeftOpponent++;
+				}
+			}
+			if (m.x>offset.x && canMove(game, { m.x-1, m.y }, player)) {
+				game.playerMoves[m.y][m.x-1] = 1;
+				game.movesLeftPlayer++;
+			}
+		}
 	}
 	else {
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, player) && (game.board & 1LL<<newPos) && newPos!=game.player)
-					return false;
+		if (opponent=='v') {
+			game.board[m.y][m.x] = '-';
+			game.board[m.y+1][m.x] = '-';
+
+			game.opponentMoves[m.y][m.x] = 1;
+			game.movesLeftOpponent++;
+
+			if (canMove(game, { m.x, m.y+1 }, opponent)) {
+				game.opponentMoves[m.y+1][m.x] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (canMove(game, { m.x, m.y }, player)) {
+				game.playerMoves[m.y][m.x] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (canMove(game, { m.x, m.y+1 }, player)) {
+				game.playerMoves[m.y+1][m.x] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (m.x>=offset.x) {
+				if (canMove(game, { m.x-1, m.y }, player)) {
+					game.playerMoves[m.y][m.x-1] = 1;
+					game.movesLeftPlayer++;
+				}
+				if (canMove(game, { m.x-1, m.y+1 }, player)) {
+					game.playerMoves[m.y+1][m.x-1] = 1;
+					game.movesLeftPlayer++;
+				}
+			}
+			if (m.y>offset.y && canMove(game, { m.x, m.y-1 }, opponent)) {
+				game.opponentMoves[m.y-1][m.x] = 1;
+				game.movesLeftOpponent++;
 			}
 		}
-		return true;
+		else {
+			game.board[m.y][m.x] = '-';
+			game.board[m.y][m.x+1] = '-';
+
+			game.opponentMoves[m.y][m.x] = 1;
+			game.movesLeftOpponent++;
+
+			if (canMove(game, { m.x+1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x+1] = 1;
+				game.movesLeftOpponent++;
+			}
+			if (canMove(game, { m.x, m.y }, player)) {
+				game.playerMoves[m.y][m.x] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (canMove(game, { m.x+1, m.y }, player)) {
+				game.playerMoves[m.y][m.x+1] = 1;
+				game.movesLeftPlayer++;
+			}
+			if (m.x>=offset.x) {
+				if (canMove(game, { m.x, m.y-1 }, player)) {
+					game.playerMoves[m.y-1][m.x] = 1;
+					game.movesLeftPlayer++;
+				}
+				if (canMove(game, { m.x+1, m.y-1 }, player)) {
+					game.playerMoves[m.y-1][m.x+1] = 1;
+					game.movesLeftPlayer++;
+				}
+			}
+			if (m.x>offset.x && canMove(game, { m.x-1, m.y }, opponent)) {
+				game.opponentMoves[m.y][m.x-1] = 1;
+				game.movesLeftOpponent++;
+			}
+		}
 	}
 }
 
-int minimax(GameState game, int depth, int alpha, int beta, bool maximizingPlayer) {
+inline int evaluate(GameState &game) {
 
-	if (maximizingPlayer && playerStuck(game, true)) {
-		return -100+depth;
+	nodesEvaluated++;
+	return game.movesLeftPlayer-game.movesLeftOpponent;
+
+}
+
+ScoredMove minimax(GameState &game, int depth, int alpha, int beta, bool maximizingPlayer) {
+
+	checkTime();
+
+	if (maximizingPlayer && game.movesLeftPlayer==0) {
+		return ScoredMove(Score(-WIN_SCORE-depth*DEPTH_MULTIPLIER, depth));
 	}
-	else if (!maximizingPlayer && playerStuck(game, false)) {
-		return 100-depth;
+	else if (!maximizingPlayer && game.movesLeftOpponent==0) {
+		return ScoredMove(Score(WIN_SCORE+depth*DEPTH_MULTIPLIER, depth));
 	}
-	else if (depth == MAX_DEPTH) {
-		return evaluate(game, maximizingPlayer);
+	else if (depth==0) {
+		return ScoredMove(Score(evaluate(game), depth));
 	}
 
 	if (maximizingPlayer) {
-		int val = MIN;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.player+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
-					GameState cur = game;
-					cur.player = newPos;
-					REP(k, SIZE*SIZE) {
-						if (checkValidCellMove(cur, k)) {
-							cur.board ^= 1LL<<k;
-							val = max(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
-							alpha = max(alpha, val);
-							if (beta<=alpha)
-								break;
-						}
+		ScoredMove bestMove = ScoredMove(Score(MIN, -1));
+
+		FOR(i, offset.y, SIZE_EX-offset.y-1) {
+			FOR(j, offset.x, SIZE_EX-offset.x-1) {
+				if (depth == maxDepth)
+					maxDepthReached = (maxDepth-1) + (float)(i*SIZE+j)/(SIZE*SIZE);
+				if (game.playerMoves[i][j]) {
+					makeMove(game, { j, i }, maximizingPlayer);
+					ScoredMove curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+					undoMove(game, { j, i }, maximizingPlayer);
+					if (curMove.score>bestMove.score) {
+						bestMove.move = { j, i };
+						bestMove.score = curMove.score;
 					}
+					alpha = max(alpha, bestMove.score.value);
+					if (beta<=alpha)
+						break;
 				}
 			}
 		}
-		return val;
+
+		bestMove.score.depth++;
+		if (depth==maxDepth)
+			bestMoveOverall = bestMove;
+		return bestMove.score;
 	}
 	else {
-		int val = MAX;
-		FOR(i, -1, 1) {
-			FOR(j, -1, 1) {
-				int newPos = game.opponent+i*SIZE+j;
-				if (checkValidBotMove(game, newPos, maximizingPlayer)) {
-					GameState cur = game;
-					cur.opponent = newPos;
-					REP(k, SIZE*SIZE) {
-						if (checkValidCellMove(game, k)) {
-							cur.board ^= 1LL<<k;
-							val = min(val, minimax(cur, depth+1, alpha, beta, !maximizingPlayer));
-							beta = min(beta, val);
-							if (beta<=alpha)
-								break;
-						}
+		ScoredMove bestMove = ScoredMove(Score(MAX, -1));
+
+		FOR(i, offset.y, SIZE_EX-offset.y-1) {
+			FOR(j, offset.x, SIZE_EX-offset.x-1) {
+				if (game.opponentMoves[i][j]) {
+					makeMove(game, { j, i }, maximizingPlayer);
+					ScoredMove curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+					undoMove(game, { j, i }, maximizingPlayer);
+					if (curMove.score<bestMove.score) {
+						bestMove.move = { j, i };
+						bestMove.score = curMove.score;
 					}
+					beta = min(beta, bestMove.score.value);
+					if (beta<=alpha)
+						break;
 				}
 			}
 		}
-		return val;
+
+		bestMove.score.depth++;
+		return bestMove.score;
 	}
-}
-
-void printBestMove(GameState game) {
-
-	int maxVal = MIN;
-	GameMove bestMove;
-	FOR(i, -1, 1) {
-		FOR(j, -1, 1) {
-			int newPos = game.player+i*SIZE+j;
-			if (checkValidBotMove(game, newPos, true)) {
-				GameState cur = game;
-				cur.player = newPos;
-				REP(k, SIZE*SIZE) {
-					if (checkValidCellMove(cur, k)) {
-						cur.board ^= 1LL<<k;
-						int curVal = minimax(cur, 1, maxVal, MAX, false);
-						if (curVal > maxVal) {
-							maxVal = curVal;
-							bestMove.cell = k;
-							bestMove.bot = newPos;
-						}
-					}
-				}
-			}
-		}
-	}
-
-	printf("%d %d\n", bestMove.bot/SIZE, bestMove.bot%SIZE);
-	printf("%d %d\n", bestMove.cell/SIZE, bestMove.cell%SIZE);
 
 }
 
 int main() {
 
-	GameState original;
-	original.board = 0;
-	int x, p1, p2;
-	REP(i, SIZE*SIZE) {
-		scanf("%d", &x);
-		if (x!=-1) {
-			original.board |= 1LL<<i;
-			if (x==1)
-				p1 = i;
-			else if (x==2)
-				p2 = i;
+	time_elapsed = clock();
+	GameState game;
+
+	//Reading Player Info
+	scanf("%c\n", &player);
+	if (player=='v')
+		opponent = 'h';
+	else
+		opponent = 'v';
+
+	//Reading Board Info
+	REP(i, SIZE_EX) {
+		REP(j, SIZE_EX) {
+			if (i<offset.y || j<offset.x || i>=SIZE_EX-offset.y || j>=SIZE_EX-offset.x) {
+				game.board[i][j] = '#';
+				continue;
+			}
+			scanf("%c", &game.board[i][j]);
+			
+		}
+		if (i>=offset.y && i<SIZE_EX-offset.y) {
+			getchar();
 		}
 	}
 
-	scanf("%d", &player);
-	if (player==1) {
-		original.player = p1;
-		original.opponent = p2;
-	}
-	else {
-		original.player = p2;
-		original.opponent = p1;
-	}
+	preCalculateMoves(game);
 
-	printBestMove(original);
-
+	FOR(d, 1, 100) {
+		maxDepth = d;
+		minimax(game, maxDepth, MIN, MAX, true);
+	}
+	printBestMove();
 	sp;
 	return 0;
-
 }
 
-//
+// Awesome Bot
