@@ -19,8 +19,10 @@
 #include <queue>
 #include <stack>
 #include <bitset>
+#include <random>
 #include <string>
 #include <vector>
+#include <climits>
 #include <iostream>
 #include <algorithm>
 #include <functional>
@@ -44,8 +46,10 @@ using namespace std;
 
 #define SIZE 8
 #define SIZE_EX 10
+#define HASH_SIZE 1000000
+#define RANDOM_SEED 26640195
 
-#define TIME_LIMIT 1.9
+#define TIME_LIMIT 1.9000
 
 #define WIN_SCORE 100000
 
@@ -134,9 +138,15 @@ struct ScoredMove {
 struct GameState {
 	int turn;
 	int movesLeftPlayer, movesLeftOpponent;
+	unsigned long long int ZobristKey;
 	int playerMoves[SIZE_EX][SIZE_EX];
 	int opponentMoves[SIZE_EX][SIZE_EX];
 	char board[SIZE_EX][SIZE_EX];
+};
+
+struct HashEntry {
+	Score score;
+	unsigned long long int ZobristKey;
 };
 
 const int MIN = 1<<31;
@@ -149,6 +159,55 @@ int nodesEvaluated;
 float maxDepthReached;
 clock_t time_elapsed;
 ScoredMove bestMoveOverall;
+
+unsigned long long int ZobristTalbe[SIZE_EX][SIZE_EX][3];
+HashEntry transpostionTable[HASH_SIZE];
+
+void ZobristHashing(GameState &game) {
+
+	mt19937 mt(RANDOM_SEED);
+	uniform_int_distribution<unsigned long long int> dist(0, UINT64_MAX);
+
+
+	game.ZobristKey = 0;
+	REP(i, SIZE_EX) {
+		REP(j, SIZE_EX) {
+			REP(k, 3)
+				ZobristTalbe[i][j][k] = dist(mt);
+			if (game.board[i][j]=='-')
+				game.ZobristKey ^= ZobristTalbe[i][j][0];
+			else if (game.board[i][j]=='v')
+				game.ZobristKey ^= ZobristTalbe[i][j][1];
+			else if (game.board[i][j]=='h')
+				game.ZobristKey ^= ZobristTalbe[i][j][2];
+		}
+	}
+
+}
+
+inline Score retriveValueofState(GameState &game) {
+
+	int key = game.ZobristKey%HASH_SIZE;
+	if (transpostionTable[key].score.depth!=-1 && transpostionTable[key].ZobristKey==game.ZobristKey)
+		return transpostionTable[key].score;
+	else
+		return Score();
+
+}
+
+inline void storeValueofState(GameState &game, Score score) {
+
+	int key = game.ZobristKey%HASH_SIZE;
+	if (transpostionTable[key].score.depth==-1) {
+		transpostionTable[key].score = score;
+		transpostionTable[key].ZobristKey = game.ZobristKey;
+	}
+	else if (transpostionTable[key].score.depth<score.depth) {
+		transpostionTable[key].score = score;
+		transpostionTable[key].ZobristKey = game.ZobristKey;
+	}
+
+}
 
 inline void printBestMove() {
 
@@ -172,6 +231,12 @@ inline void checkTime() {
 		sp;
 		exit(EXIT_SUCCESS);
 	}
+
+}
+
+inline void printTime() {
+
+	DB("Time Elapsed = %lf\n", ((double)clock()-time_elapsed)/CLOCKS_PER_SEC);
 
 }
 
@@ -259,6 +324,10 @@ inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
 			}
 			game.board[m.y][m.x] = player;
 			game.board[m.y+1][m.x] = player;
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][1];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][1];
 		}
 		else {
 			game.playerMoves[m.y][m.x] = 0;
@@ -293,6 +362,10 @@ inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
 			}
 			game.board[m.y][m.x] = player;
 			game.board[m.y][m.x+1] = player;
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][2];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][2];
 		}
 	}
 
@@ -302,8 +375,8 @@ inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
 			game.opponentMoves[m.y][m.x] = 0;
 			game.movesLeftOpponent--;
 
-			
-			if (canMove(game, { m.x, m.y-1 }, opponent)) {
+
+			if (canMove(game, { m.x, m.y+1 }, opponent)) {
 				game.opponentMoves[m.y+1][m.x] = 0;
 				game.movesLeftOpponent--;
 			}
@@ -332,12 +405,16 @@ inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
 			}
 
 			game.board[m.y][m.x] = opponent;
-			game.board[m.y+1][m.x] = opponent;//
+			game.board[m.y+1][m.x] = opponent;
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][1];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][1];
 		}
 		else {
 			game.opponentMoves[m.y][m.x] = 0;
 			game.movesLeftOpponent--;
-			
+
 			if (canMove(game, { m.x+1, m.y }, opponent)) {
 				game.opponentMoves[m.y][m.x+1] = 0;
 				game.movesLeftOpponent--;
@@ -367,6 +444,10 @@ inline void makeMove(GameState &game, point m, bool maximizingPlayer) {
 			}
 			game.board[m.y][m.x] = opponent;
 			game.board[m.y][m.x+1] = opponent;
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][2];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][2];
 		}
 	}
 
@@ -378,8 +459,13 @@ inline void undoMove(GameState &game, point m, bool maximizingPlayer) {
 
 	if (maximizingPlayer) {
 		if (player=='v') {
+
 			game.board[m.y][m.x] = '-';
 			game.board[m.y+1][m.x] = '-';
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][1];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][1];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][0];
 
 			game.playerMoves[m.y][m.x] = 1;
 			game.movesLeftPlayer++;
@@ -412,8 +498,13 @@ inline void undoMove(GameState &game, point m, bool maximizingPlayer) {
 			}
 		}
 		else {
+
 			game.board[m.y][m.x] = '-';
 			game.board[m.y][m.x+1] = '-';
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][2];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][2];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][0];
 
 			game.playerMoves[m.y][m.x] = 1;
 			game.movesLeftPlayer++;
@@ -450,6 +541,10 @@ inline void undoMove(GameState &game, point m, bool maximizingPlayer) {
 		if (opponent=='v') {
 			game.board[m.y][m.x] = '-';
 			game.board[m.y+1][m.x] = '-';
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][1];
+			game.ZobristKey ^= ZobristTalbe[m.y+1][m.x][1];
 
 			game.opponentMoves[m.y][m.x] = 1;
 			game.movesLeftOpponent++;
@@ -484,6 +579,10 @@ inline void undoMove(GameState &game, point m, bool maximizingPlayer) {
 		else {
 			game.board[m.y][m.x] = '-';
 			game.board[m.y][m.x+1] = '-';
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][0];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x][2];
+			game.ZobristKey ^= ZobristTalbe[m.y][m.x+1][2];
 
 			game.opponentMoves[m.y][m.x] = 1;
 			game.movesLeftOpponent++;
@@ -530,10 +629,10 @@ ScoredMove minimax(GameState &game, int depth, int alpha, int beta, bool maximiz
 	checkTime();
 
 	if (maximizingPlayer && game.movesLeftPlayer==0) {
-		return ScoredMove(Score(-WIN_SCORE-depth*DEPTH_MULTIPLIER, depth));
+		return ScoredMove(Score(-WIN_SCORE+depth*DEPTH_MULTIPLIER+evaluate(game), depth));
 	}
 	else if (!maximizingPlayer && game.movesLeftOpponent==0) {
-		return ScoredMove(Score(WIN_SCORE+depth*DEPTH_MULTIPLIER, depth));
+		return ScoredMove(Score(WIN_SCORE-depth*DEPTH_MULTIPLIER+evaluate(game), depth));
 	}
 	else if (depth==0) {
 		return ScoredMove(Score(evaluate(game), depth));
@@ -545,10 +644,18 @@ ScoredMove minimax(GameState &game, int depth, int alpha, int beta, bool maximiz
 		FOR(i, offset.y, SIZE_EX-offset.y-1) {
 			FOR(j, offset.x, SIZE_EX-offset.x-1) {
 				if (depth == maxDepth)
-					maxDepthReached = (maxDepth-1) + (float)(i*SIZE+j)/(SIZE*SIZE);
+					maxDepthReached = (maxDepth-1) + (float)((i-1)*SIZE+j)/(SIZE*SIZE);
 				if (game.playerMoves[i][j]) {
 					makeMove(game, { j, i }, maximizingPlayer);
-					ScoredMove curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+					ScoredMove curMove;
+					Score storedScore = retriveValueofState(game);
+					if (storedScore.depth>=depth) {
+						curMove.score = storedScore;
+					}
+					else {
+						curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+						storeValueofState(game, curMove.score);
+					}
 					undoMove(game, { j, i }, maximizingPlayer);
 					if (curMove.score>bestMove.score) {
 						bestMove.move = { j, i };
@@ -573,7 +680,15 @@ ScoredMove minimax(GameState &game, int depth, int alpha, int beta, bool maximiz
 			FOR(j, offset.x, SIZE_EX-offset.x-1) {
 				if (game.opponentMoves[i][j]) {
 					makeMove(game, { j, i }, maximizingPlayer);
-					ScoredMove curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+					ScoredMove curMove;
+					Score storedScore = retriveValueofState(game);
+					if (storedScore.depth>=depth) {
+						curMove.score = storedScore;
+					}
+					else {
+						curMove = minimax(game, depth-1, alpha, beta, !maximizingPlayer);
+						storeValueofState(game, curMove.score);
+					}
 					undoMove(game, { j, i }, maximizingPlayer);
 					if (curMove.score<bestMove.score) {
 						bestMove.move = { j, i };
@@ -612,18 +727,21 @@ int main() {
 				continue;
 			}
 			scanf("%c", &game.board[i][j]);
-			
+
 		}
 		if (i>=offset.y && i<SIZE_EX-offset.y) {
 			getchar();
 		}
 	}
 
+	ZobristHashing(game);
 	preCalculateMoves(game);
-
-	FOR(d, 1, 100) {
+	printTime();
+	FOR(d, 1, 33) {
 		maxDepth = d;
 		minimax(game, maxDepth, MIN, MAX, true);
+		DB("Depth = %d and ", d);
+		printTime();
 	}
 	printBestMove();
 	sp;
