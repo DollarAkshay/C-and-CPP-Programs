@@ -2,7 +2,7 @@
  *                  *
  * $Dollar Akshay$  *
  *                  *
- *~~~~~~~~~~~~~~~~~~*/
+ *~~~~~~~~~~~~~~~~~~
 
 
 #include <stdio.h>
@@ -16,7 +16,9 @@
 #include <iostream>
 #include <queue>
 #include <stack>
+#include <random>
 #include <vector>
+
 
 using namespace std;
 
@@ -32,6 +34,16 @@ using namespace std;
 #define MOD 1000000007
 
 FILE *fp = fopen("testcase.txt", "w");
+
+mt19937 mt(26640195);
+
+ll int randomInt(ll int low, ll int high) {
+
+	uniform_int_distribution<ll int> dist(low, high);
+
+	return dist(mt);
+
+}
 
 void randomLowerString(int len) {
 
@@ -49,20 +61,30 @@ void randomUpperString(int len) {
 
 }
 
+void randomArray(ll int low,ll int high,int n) {
+
+	REP(i, n) {
+		if (n%10000==0 && n>0)
+			fprintf(fp, "\n");
+		fprintf(fp, "%lld ", randomInt(low, high));
+	}
+	fprintf(fp, "\n");
+
+}
+
 int main(){
 
-	srand(time(NULL));
-
-
-	int n = 1000;
-	int t = rand()%n;
-	fprintf(fp, "%d %d\n",n, t);
-	randomLowerString(n);
-	randomLowerString(n);
+	int t = randomInt(1, 1);
+	REP(tc, t) {
+		fprintf(fp, "%lld\n", randomInt(1, 1));
+		ll int n = randomInt(9*1E6, 1E7), m = randomInt(9*1E6, 1E7), k = randomInt(9*1E4, 1E5);
+		fprintf(fp, "%lld %lld %lld\n", n, m, k);
+		randomArray(1, n*m, k);
+	}
+	printf("\nDONE :)\n\n");
 	fclose(fp);
-	printf("Done\n");
 	sp;
 	return 0;
 }
 
-//
+*/
