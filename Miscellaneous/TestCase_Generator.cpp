@@ -2,7 +2,7 @@
  *                  *
  * $Dollar Akshay$  *
  *                  *
- *~~~~~~~~~~~~~~~~~~
+ *~~~~~~~~~~~~~~~~~~*/
 
 
 #include <stdio.h>
@@ -74,12 +74,16 @@ void randomArray(ll int low,ll int high,int n) {
 
 int main(){
 
-	int t = randomInt(1, 1);
+	ll int t = randomInt(40, 50);
+	fprintf(fp, "%lld\n", t);
 	REP(tc, t) {
-		fprintf(fp, "%lld\n", randomInt(1, 1));
-		ll int n = randomInt(9*1E6, 1E7), m = randomInt(9*1E6, 1E7), k = randomInt(9*1E4, 1E5);
-		fprintf(fp, "%lld %lld %lld\n", n, m, k);
-		randomArray(1, n*m, k);
+		ll int n = randomInt(900, 1000);
+		ll int m = randomInt(1, 1000);
+		fprintf(fp, "%lld %lld\n", m, n);
+		REP(i, n) 
+			fprintf(fp, "%lld %lld\n", randomInt(1, m), randomInt(1, m));
+		
+
 	}
 	printf("\nDONE :)\n\n");
 	fclose(fp);
@@ -87,4 +91,3 @@ int main(){
 	return 0;
 }
 
-*/
