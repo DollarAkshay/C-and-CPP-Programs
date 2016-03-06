@@ -53,6 +53,14 @@ void randomLowerString(int len) {
 
 }
 
+void randomString(char s, int diff, int len) {
+
+	REP(i, len)
+		fprintf(fp, "%c", s+rand()%diff);
+	fprintf(fp, "\n");
+
+}
+
 void randomUpperString(int len) {
 
 	REP(i, len)
@@ -74,16 +82,11 @@ void randomArray(ll int low,ll int high,int n) {
 
 int main(){
 
-	ll int t = randomInt(40, 50);
+	ll int t = randomInt(10000, 20000);
 	fprintf(fp, "%lld\n", t);
-	REP(tc, t) {
-		ll int n = randomInt(900, 1000);
-		ll int m = randomInt(1, 1000);
-		fprintf(fp, "%lld %lld\n", m, n);
-		REP(i, n) 
-			fprintf(fp, "%lld %lld\n", randomInt(1, m), randomInt(1, m));
-		
 
+	REP(tc, t) {
+		randomString('a', 4, randomInt(1, 50));
 	}
 	printf("\nDONE :)\n\n");
 	fclose(fp);
