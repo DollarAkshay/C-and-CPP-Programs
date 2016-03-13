@@ -82,11 +82,13 @@ void randomArray(ll int low,ll int high,int n) {
 
 int main(){
 
-	ll int t = randomInt(10000, 20000);
+	ll int t = 100000;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		randomString('a', 4, randomInt(1, 50));
+		int l = randomInt(1, 20);
+		randomString('a', 6, l);
+		randomString('a', 6, l);
 	}
 	printf("\nDONE :)\n\n");
 	fclose(fp);

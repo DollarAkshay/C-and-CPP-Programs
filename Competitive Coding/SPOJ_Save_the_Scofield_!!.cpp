@@ -4,7 +4,7 @@
  *                  *
  *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerearth.com/megacodants/algorithm/margana-is-an-anagram/
+//http://www.spoj.com/problems/UJ01/
 
 #include <math.h>
 #include <time.h>
@@ -41,22 +41,39 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int a[100000];
+ll int gcd(ll int a, ll int b){
+
+	ll int c;
+	while (a != 0) {
+		c = a; 
+		a = b%a;  
+		b = c;
+	}
+	return b;
+}
 
 int main(){
 
-	
 	int t;
-
 	scanf("%d", &t);
 	REP(tc, t){
-		char s1[1001], s2[1001];
-		int f1[26], f2[26];
-		int l1, l2;
+		ll int a, b, n;
+		scanf("%lld %lld %lld", &a, &b, &n);
 
-		scanf("%s %s\n", s1, s2);
+		ll int lcm = a*b/gcd(a, b);
 
+		ll int cycle = lcm/a + lcm/b -1;
 
+		ll int res_a = lcm*(n/cycle), res_b = lcm*(n/cycle);
+
+		REP(i, n%cycle) {
+			if (res_a+a < res_b+b)
+				res_a += a;
+			else
+				res_b += b;
+		}
+
+		printf("%lld\n", max(res_a, res_b));
 	}
 	sp;
 	return 0;
