@@ -20,7 +20,7 @@ double degtorad(double deg){
 	return deg*PI/180;
 }
 
-//Function to Calculate Distance between 2 points
+// Function to Calculate Distance between 2 points
 double dist(point a, point b) {
 	return sqrt((a.x-b.x)*(a.x-b.x) + (a.y-b.y)*(a.y-b.y));
 }
@@ -42,16 +42,16 @@ void drawNodes() {
 
 	for (int i = 0; i<nodeCount; i++) {
 		if (i==0)
-			glColor3f(0, 0.7, 1);									//Set the Colour to blue for the first Node
+			glColor3f(0, 0.7, 1);									// Set the Colour to blue for the first Node
 		else
-			glColor3f(1, 1, 1);										//For the rest of the nodes its a white color
-		drawCircle(nodeList[i].x, nodeList[i].y, 0.05);				// Draw a circle at the point nodeList[i] with a 0.05 radius
+			glColor3f(1, 1, 1);										// For the rest of the nodes its a white color
+		drawCircle(nodeList[i].x, nodeList[i].y, 0.03);				// Draw a circle at the point nodeList[i] with a 0.05 radius
 	}
 
 }
 
 
-//Function to find the nearest node to a given node N
+// Function to find the nearest node to a given node N
 int findNearestNode(int N, bool visited[]) {
 
 	int nearestNode = -1;
