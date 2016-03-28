@@ -45,7 +45,7 @@ void drawNodes() {
 			glColor3f(0, 0.7, 1);									// Set the Colour to blue for the first Node
 		else
 			glColor3f(1, 1, 1);										// For the rest of the nodes its a white color
-		drawCircle(nodeList[i].x, nodeList[i].y, 0.03);				// Draw a circle at the point nodeList[i] with a 0.05 radius
+		drawCircle(nodeList[i].x, nodeList[i].y, 0.03);				// Draw a circle at the point nodeList[i] with a 0.03 radius
 	}
 
 }
