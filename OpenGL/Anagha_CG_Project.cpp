@@ -55,10 +55,10 @@ void drawNodes() {
 int findNearestNode(int N, bool visited[]) {
 
 	int nearestNode = -1;
-	double minDist = 1000000;										//Set a really high initial value for minimum distance
+	double minDist = 1000000;										// Set a really high initial value for minimum distance
 
 	for (int i = 0; i<nodeCount; i++) {
-		if (visited[i]==false && dist(nodeList[N], nodeList[i])< minDist) {		//If the node is not visited and the distance to the node is less than the existing distance choose this node
+		if (visited[i]==false && dist(nodeList[N], nodeList[i]) < minDist) {		// If the node is not visited and the distance to the node is less than the existing distance choose this node
 			minDist = dist(nodeList[N], nodeList[i]);
 			nearestNode = i;
 		}
@@ -76,7 +76,7 @@ void solveTSP() {
 	int path[100];
 
 	for (int i = 0; i<100; i++)
-		visited[i] = false;									//Initially set the visited to false for all nodes
+		visited[i] = false;									// Initially set the visited to false for all nodes
 
 	visited[0] = true;										// Start node is 0th node (Blue Node) so we visit that first
 	path[count] = 0;
