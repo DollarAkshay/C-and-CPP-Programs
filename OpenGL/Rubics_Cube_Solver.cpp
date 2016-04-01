@@ -12,6 +12,7 @@
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
+#include <windows.h>
 #include <map>
 #include <set>
 #include <deque>
@@ -133,13 +134,18 @@ struct State {
 
 };
 
-float angleY = 0;
+
+double savedmatrix[16];
+
+bool temp = true;
+int px = -1, py = -1;
+float angleY = 0, angleX = 0;
 
 float v[8][3] = { {-1,+1,+1}, {+1,+1,+1}, {+1,-1,+1}, {-1,-1,+1},
 				  {-1,+1,-1}, {+1,+1,-1}, {+1,-1,-1}, {-1,-1,-1} };
 
 
-color colorList[6] = { color(1,0,0), color(0.3,0.8,0), color(0,0.6,1), color(1,1,0), color(1,0.4,0), color(1,0,0.8) };
+color colorList[6] = { color(1,0,0), color(1,0.9,0), color(0.3,0.8,0), color(0,0.6,1),  color(1,0.4,0), color(1,0,0.8) };
 
 void reshape(int w, int h) {
 	glViewport(0, 0, w, h);
@@ -147,18 +153,41 @@ void reshape(int w, int h) {
 	glLoadIdentity();
 	glOrtho(-2, 2, -2, 2, -2, 2);
 	glMatrixMode(GL_MODELVIEW);
-}
 
-void init() {
-	glClearColor(0, 0, 0, 0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0, -2, -6, 0, 0, 0, 0, 1, 1);
-
+	glGetDoublev(GL_MODELVIEW_MATRIX, savedmatrix);
 }
 
 void mouse(int button, int state, int x, int y) {
 
+	if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
+		px = x;
+		py = y;
+		temp = true;
+	}
+
+	if (button==GLUT_LEFT_BUTTON && state==GLUT_UP) {
+		angleY = (float)(x - px)*360/600;
+		angleX = (float)(y - py)*360/600;
+		temp = false;
+		py = px = -1;
+	}
+
+}
+
+void motion(int x, int y) {
+
+	angleY = (float)(x - px)*360/600;
+	angleX = (float)(y - py)*360/600;
+
+}
+
+
+void init() {
+	
+	glClearColor(0, 0, 0, 0);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(0, -2, -6, 0, 0, 0, 0, 1, 1);
 
 }
 
@@ -225,12 +254,25 @@ void display() {
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 	glClearColor(0, 0, 0, 0);
 
-	glLoadIdentity();
-	glRotatef(angleY, 0.5, 1, 0.5);
+
+	if (temp) {
+		glLoadIdentity();
+		glLoadMatrixd(savedmatrix);
+		glRotatef(angleX, 1, 0, 0);
+		glRotatef(angleY, 0, 1, 0);
+	}
+	else {
+		glLoadIdentity();
+		glLoadMatrixd(savedmatrix);
+		glRotatef(angleX, 1, 0, 0);
+		glRotatef(angleY, 0, 1, 0);
+		angleX = 0;
+		angleY = 0;
+		glGetDoublev(GL_MODELVIEW_MATRIX, savedmatrix);
+	}
 
 	drawCube();
-	angleY += 0.1;
-
+	
 	glutSwapBuffers();
 	glutPostRedisplay();
 
@@ -245,8 +287,10 @@ int main(int argc, char *argv[]) {
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_DEPTH);
 	glutInitWindowSize(600, 600);
 	glutInitWindowPosition(0, 0);
-	glutCreateWindow("TSP");
+	glutCreateWindow("Rubics Cube");
 	glutDisplayFunc(display);
+	glutMouseFunc(mouse);
+	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
 
 	glEnable(GL_DEPTH_TEST);
