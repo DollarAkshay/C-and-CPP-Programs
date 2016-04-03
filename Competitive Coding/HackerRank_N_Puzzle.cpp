@@ -1,8 +1,8 @@
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
 //https://www.hackerrank.com/challenges/n-puzzle
 
@@ -54,12 +54,24 @@ struct point {
 };
 
 struct board {
-	int size;
+
+	int size, score;
 	point empty;
 	int grid[5][5];
+
 	board() {
 
 	}
+	bool operator!=(const board& rhs) const {
+		REP(i, size) {
+			REP(j, size) {
+				if (grid[i][j]!=rhs.grid[i][j])
+					return true;
+			}
+		}
+		return false;
+	}
+
 	bool operator==(const board& rhs) const {
 		REP(i, size) {
 			REP(j, size) {
@@ -69,104 +81,147 @@ struct board {
 		}
 		return true;
 	}
+
 	bool operator<(const board& rhs) const {
+
+		if (score != rhs.score)
+			return score<rhs.score;
 		REP(i, size) {
 			REP(j, size) {
-				if (grid[i][j]!=rhs.grid[i][j])
+				if (grid[i][j] != rhs.grid[i][j])
 					return grid[i][j] < rhs.grid[i][j];
 			}
 		}
 		return false;
 	}
-};
 
-board ans;
+	bool operator>(const board& rhs) const {
 
-point dir[] = { { 0,-1 },{ -1,0 },{ 1,0 },{ 0,1 } };
-map<board, board> parent;
+		if (score != rhs.score)
+			return score>rhs.score;
+		REP(i, size) {
+			REP(j, size) {
+				if (grid[i][j] != rhs.grid[i][j])
+					return grid[i][j] > rhs.grid[i][j];
+			}
+		}
+		return false;
+	}
 
-vector<board> path;
-
-
-void swap(board *b, point p1, point p2){
-
-	int t = b->grid[p1.y][p1.x];
-	b->grid[p1.y][p1.x] = b->grid[p2.y][p2.x];
-	b->grid[p2.y][p2.x] = t;
-}
-
-void BFS(board src, int n) {
-
-	queue<board> q;
-	set<board> visit;
-
-	q.push(src);
-	visit.insert(src);
-
-	while (!q.empty()) {
-		board cur = q.front();
-		q.pop();
-		if (cur==ans)
-			break;
-		REP(i, 4) {
-			point p = point(cur.empty.x+dir[i].x, cur.empty.y+dir[i].y);
-			if (p.x>=0 && p.x<n && p.y>=0 && p.y<n) {
-				board next = cur;
-				swap(&next, p, cur.empty);
-				next.empty = p;
-				if (visit.count(next)==0) {
-					q.push(next);
-					parent[next] = cur;
+	void recalculate(int inScore) {
+		score = inScore;
+		REP(i, size) {
+			REP(j, size) {
+				if (grid[i][j]!=0) {
+					int x = grid[i][j];
+					score += abs(j-x%size) + abs(i-x/size);
 				}
-
 			}
 		}
 	}
+};
 
-	board u = ans;
-	while (!(u==src)) {
-		path.push_back(u);
-		u = parent[u];
-	}
-	path.push_back(u);
-	REV(path, path.size());
+point dir[] = { { 0,-1 },{ -1,0 },{ 1,0 },{ 0,1 } };
+map<board, pair<board, int>> parent;
 
+vector<board> path;
+
+priority_queue<pair<board, int>, vector<pair<board, int>>, greater<pair<board, int>>> open;
+set<board> closed;
+
+
+void swap(board *b, point p) {
+
+	int t = b->grid[p.y][p.x];
+	b->grid[p.y][p.x] = b->grid[b->empty.y][b->empty.x];
+	b->grid[b->empty.y][b->empty.x] = t;
+	b->empty = p;
 }
 
 void printBoard(board b) {
 	REP(i, b.size) {
-		REP(j, b.size) 
+		REP(j, b.size)
 			printf("%d ", b.grid[i][j]);
 		printf("\n");
 	}
 	printf("\n");
 }
 
-int main(){
+void AStar(board &original) {
+
+	bool found = false;
+	board ans;
+
+	open.push(mp(original, 0));
+	closed.insert(original);
+
+	while (!open.empty() && !found) {
+
+		int m = open.top().second;
+		board b = open.top().first;
+		board bcopy = b;
+		open.pop();
+		point empty = b.empty;
+		REP(i, 4) {
+			int px = b.empty.x + dir[i].x, py = b.empty.y + dir[i].y;
+			if (px>=0 && px<b.size && py>=0 && py<b.size) {
+				swap(&b, point(px, py));
+				b.recalculate(m);
+				if (closed.find(b)==closed.end()) {
+					open.push(mp(b,m+1));
+					closed.insert(b);
+					parent[b] = mp(bcopy, i);
+					if (b.score==m) {
+						found = true;
+						ans = b;
+						break;
+					}
+				}
+				swap(&b, empty);
+				b.recalculate(m);
+			}
+		}
+	}
+
+	deque<int> q;
+	while (parent.find(ans)!=parent.end()) {
+		pair<board, int> pbi = parent[ans];
+		q.push_back(pbi.second);
+		ans = pbi.first;
+	}
+
+	printf("%d\n", q.size());
+
+	while (!q.empty()) {
+		int d = q.back();
+		q.pop_back();
+		if (d==0)
+			puts("UP");
+		else if (d==1)
+			puts("LEFT");
+		else if (d==2)
+			puts("RIGHT");
+		else
+			puts("DOWN");
+	}
+}
+
+int main() {
 
 	int n;
 	board original;
+
 	scanf("%d", &n);
-	ans.size = original.size = n;
-	REP(i, original.size) {
-		REP(j, original.size) {
+	original.size = n;
+	REP(i, n) {
+		REP(j, n) {
 			scanf("%d", &original.grid[i][j]);
 			if (original.grid[i][j]==0)
 				original.empty = point(j, i);
 		}
 	}
-
-	int k = 0;
-	REP(i, ans.size)
-		REP(j, ans.size)
-			ans.grid[i][j] = k++;
-	ans.empty = point(0, 0);
-
-	BFS(original, n);
-
-	REP(i, path.size()) {
-		printBoard(path[i]);
-	}
+	original.recalculate(0);
+	AStar(original);
 
 	sp;
 
