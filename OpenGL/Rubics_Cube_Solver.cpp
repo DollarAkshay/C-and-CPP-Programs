@@ -24,9 +24,10 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
-#include <GL/glut.h>
+#include <GL/freeglut.h>
 
 using namespace std;
+using namespace Eigen;
 
 #define sp system("pause")
 #define FOR(i,a,b) for(int i=a;i<=b;++i)
@@ -53,73 +54,6 @@ public :
 		c[2] = b;
 		return c;
 	}
-};
-
-class Quaternion {
-
-public:
-	double s, v[3];
-	Quaternion() {
-		s = 0;
-		v[0] = v[1] = v[2] = 0;
-	}
-
-	Quaternion(double is, double iv[3]) {
-		s = is;
-		v[0] = iv[0];
-		v[1] = iv[1];
-		v[2] = iv[2];
-	}
-
-	Quaternion(double is, double ix, double iy, double iz ) {
-		s = is;
-		v[0] = ix;
-		v[1] = iy;
-		v[2] = iz;
-	}
-
-	void normalize() {
-
-		double mag = (double) sqrt(s*s + v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
-		s = s/mag;
-		v[0] = v[0]/mag;
-		v[1] = v[1]/mag;
-		v[2] = v[2]/mag;
-	}
-
-	double *getRotationMatrix() {
-
-		double *matrix = new double[16];
-
-		double sx = s*v[0]   , sy = s*v[1]   , sz = s*v[2];
-		double xx = v[0]*v[0], xy = v[0]*v[1], xz = v[0]*v[2];
-		double yy = v[1]*v[1], yz = v[1]*v[2], zz = v[2]*v[2];
-
-		matrix[0]=1-2*(yy+zz);	matrix[4]=2*(xy-sz);	matrix[8]=2*(xz+sy);	matrix[12]=0;
-		matrix[1]=2*(xy+sz);	matrix[5]=1-2*(xx+zz);	matrix[9]=2*(yz-sx);	matrix[13]=0;
-		matrix[2]=2*(xz-sy);	matrix[6]=2*(yz+sx);	matrix[10]=1-2*(xx+yy);	matrix[14]=0;
-		matrix[3]=0;			matrix[7]=0;			matrix[11]=0;			matrix[15]=1;
-
-		return matrix;
-
-	}
-
-
-	void printValue() {
-		printf("%.6f, [ %.6f, %.6f, %.6f ]\n", s, v[0], v[1], v[2]);
-	}
-
-	Quaternion operator*(const Quaternion &rhs) const{
-		Quaternion q;
-
-		q.s    = s*rhs.s    -  v[0]*rhs.v[0] - v[1]*rhs.v[1] - v[2]*rhs.v[2];
-		q.v[0] = s*rhs.v[0] +  rhs.s*v[0]    + v[1]*rhs.v[2] - v[2]*rhs.v[1];
-		q.v[1] = s*rhs.v[1] +  rhs.s*v[1]    + v[2]*rhs.v[0] - v[0]*rhs.v[2];
-		q.v[2] = s*rhs.v[2] +  rhs.s*v[2]    + v[0]*rhs.v[1] - v[1]*rhs.v[0];
-
-		return q;
-	}
-
 };
 
 class State {
@@ -444,15 +378,14 @@ public:
 
 };
 
-
-bool temp = true;
+bool change = false;
 int width = 600, height = 600;
 int px = -1, py = -1;
 float angleY = 0, angleX = 0;
 const double PI = 3.1415926535;
 
 State cube;
-Quaternion camera = Quaternion(1, 0, 0, 0);
+Quaterniond camera = Quaterniond{ AngleAxisd{1,Vector3d{0,0,0}} };
 
 color colorList[6] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0) };
 
@@ -469,6 +402,20 @@ void printMatrix(double m[]) {
 		printf("\n");
 	}
 	printf("\n");
+
+}
+
+double* getRotationMatrix(Quaterniond &q) {
+
+	Matrix3d rotMat = q.normalized().toRotationMatrix();
+	double *matrix = new double[16];
+
+	matrix[0] = rotMat(0, 0);	matrix[4] = rotMat(0, 1);	matrix[8] = rotMat(0, 2);	matrix[12] = 0;
+	matrix[1] = rotMat(1, 0);	matrix[5] = rotMat(1, 1);	matrix[9] = rotMat(1, 2);	matrix[13] = 0;
+	matrix[2] = rotMat(2, 0);	matrix[6] = rotMat(2, 1);	matrix[10] = rotMat(2, 2);	matrix[14] = 0;
+	matrix[3] = 0;				matrix[7] = 0;				matrix[11] = 0;				matrix[15] = 1;
+
+	return matrix;
 
 }
 
@@ -532,11 +479,35 @@ void keyboard(unsigned char key, int x, int y) {
 
 void mouse(int button, int state, int x, int y) {
 
+	if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
+		px = x;
+		py = y;
+	}
+
+	if (button==GLUT_LEFT_BUTTON && state==GLUT_UP) {
+		py = px = -1;
+	}
+
+}
+
+void mouseWheel(int button, int dir, int x, int y){
+
+	double factor = 0.05;
+	Quaterniond qz = Quaterniond{ AngleAxisd{ dir*factor, Vector3d{ 0, 0, 1 } } };
+	camera = qz*camera;
+
 }
 
 void motion(int x, int y) {
 
-
+	if (px!=-1 && py!=-1) {
+		double factor = 0.005;
+		Quaterniond qx = Quaterniond{ AngleAxisd{ (y-py)*factor, Vector3d{ 1, 0, 0 } } };
+		Quaterniond qy = Quaterniond{ AngleAxisd{ (x-px)*factor, Vector3d{ 0, 1, 0 } } };
+		camera = qx*qy*camera;
+	}
+	px = x;
+	py = y;
 
 }
 
@@ -613,20 +584,11 @@ void display() {
 	
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelMat);
-	printMatrix(modelMat);
 
-	test[0] = test[5] = test[10] = test[15] = 1;
-	test[12] = 1;
-
-	printMatrix(camera.getRotationMatrix());
-	glMultMatrixd(camera.getRotationMatrix());
-
-	glGetDoublev(GL_MODELVIEW_MATRIX, modelMat);
-	printMatrix(modelMat);
+	glLoadIdentity();
+	glMultMatrixd(getRotationMatrix(camera));
 	
 	drawCube();
-	sp;
 
 	glutSwapBuffers();
 	glutPostRedisplay();
@@ -635,22 +597,6 @@ void display() {
 
 int main(int argc, char *argv[]) {
 
-	Eigen::Quaterniond q;
-	q.x() = 0;
-	q.y() = 1;
-	q.z() = 0;
-	q.w() = PI/4;
-
-	Eigen::Matrix3d R = q.normalized().toRotationMatrix();
-	std::cout << "R=" << std::endl << R << std::endl;
-
-	Quaternion qz = Quaternion(PI/8, 0, 0, 1);
-	Quaternion qy = Quaternion(PI/8, 0, -1, 0);
-
-	camera = qy*camera;
-	camera.printValue();
-	camera.normalize();
-	camera.printValue();
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_DEPTH);
@@ -663,6 +609,7 @@ int main(int argc, char *argv[]) {
 	glutKeyboardFunc(keyboard);
 	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
+	glutMouseWheelFunc(mouseWheel);
 
 	glEnable(GL_DEPTH_TEST);
 	glLoadIdentity();
