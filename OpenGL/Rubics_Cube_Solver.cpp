@@ -59,8 +59,8 @@ struct State {
 	1 - Back
 	2 - Left
 	3 - Right
-	4 - Top
-	5 - Bottom
+	4 - Up
+	5 - Down
 	*/
 
 	char faces[6][3][3];
@@ -274,7 +274,7 @@ struct State {
 
 	}
 
-	void top_anticlock() {
+	void up_anticlock() {
 
 		int t[3];
 
@@ -295,7 +295,7 @@ struct State {
 		}
 	}
 
-	void top_clock() {
+	void up_clock() {
 
 		int t[3];
 
@@ -317,7 +317,7 @@ struct State {
 
 	}
 
-	void bottom_anticlock() {
+	void down_anticlock() {
 
 		int t[3];
 
@@ -339,7 +339,7 @@ struct State {
 
 	}
 
-	void bottom_clock() {
+	void down_clock() {
 
 		int t[3];
 
@@ -367,8 +367,8 @@ struct State {
 	1 - Back
 	2 - Left
 	3 - Right
-	4 - Top
-	5 - Bottom
+	4 - Up
+	5 - Down
 	*/
 
 };
@@ -376,6 +376,7 @@ struct State {
 State cube;
 
 double savedmatrix[16];
+const int width = 600, height = 600;
 
 bool temp = true;
 int px = -1, py = -1;
@@ -387,14 +388,64 @@ float v[8][3] = { {-1,+1,+1}, {+1,+1,+1}, {+1,-1,+1}, {-1,-1,+1},
 
 color colorList[6] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0) };
 
-void reshape(int w, int h) {
-	glViewport(0, 0, w, h);
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-	glOrtho(-2, 2, -2, 2, -2, 2);
-	glMatrixMode(GL_MODELVIEW);
 
-	glGetDoublev(GL_MODELVIEW_MATRIX, savedmatrix);
+
+void keyboard(unsigned char key, int x, int y) {
+
+	if (key=='Q') {
+		cube.front_anticlock();
+		cube.printCube();
+	}
+	else if (key=='q') {
+		cube.front_clock();
+		cube.printCube();
+	}
+
+	if (key=='W') {
+		cube.back_anticlock();
+		cube.printCube();
+	}
+	else if (key=='w') {
+		cube.back_clock();
+		cube.printCube();
+	}
+
+	if (key=='A') {
+		cube.left_anticlock();
+		cube.printCube();
+	}
+	else if (key=='a') {
+		cube.left_clock();
+		cube.printCube();
+	}
+
+	if (key=='S') {
+		cube.right_anticlock();
+		cube.printCube();
+	}
+	else if (key=='s') {
+		cube.right_clock();
+		cube.printCube();
+	}
+
+	if (key=='Z') {
+		cube.up_anticlock();
+		cube.printCube();
+	}
+	else if (key=='z') {
+		cube.up_clock();
+		cube.printCube();
+	}
+
+	if (key=='X') {
+		cube.down_anticlock();
+		cube.printCube();
+	}
+	else if (key=='x') {
+		cube.down_clock();
+		cube.printCube();
+	}
+
 }
 
 void mouse(int button, int state, int x, int y) {
@@ -409,7 +460,6 @@ void mouse(int button, int state, int x, int y) {
 		angleY = (float)(x - px)*360/600;
 		angleX = (float)(y - py)*360/600;
 		temp = false;
-		py = px = -1;
 	}
 
 }
@@ -421,13 +471,15 @@ void motion(int x, int y) {
 
 }
 
-void init() {
-	
-	glClearColor(0, 0, 0, 0);
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-	gluLookAt(0, -2, -6, 0, 0, 0, 0, 1, 1);
+void reshape(int w, int h) {
 
+	double widthScale = (double)w/width, heightScale = (double)h/height;
+
+	glViewport(0, 0, w, h);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	glOrtho(-2*widthScale, 2*widthScale, -2*heightScale, 2*heightScale, -2, 2);
+	glMatrixMode(GL_MODELVIEW);
 }
 
 void drawFace(float *a, float *b, float *c, float *d, int face) {
@@ -482,33 +534,26 @@ void drawCube() {
 	drawFace(v[5], v[4], v[7], v[6], 1);		// Back
 	drawFace(v[4], v[0], v[3], v[7], 2);		// Left
 	drawFace(v[1], v[5], v[6], v[2], 3);		// Right
-	drawFace(v[4], v[5], v[1], v[0], 4);		// Top
-	drawFace(v[3], v[2], v[6], v[7], 5);		// Bottom
-	
-	
+	drawFace(v[4], v[5], v[1], v[0], 4);		// Up
+	drawFace(v[3], v[2], v[6], v[7], 5);		// Down
 
 }
 
 void display() {
 
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-	glClearColor(0, 0, 0, 0);
-
 
 	if (temp) {
 		glLoadIdentity();
-		glLoadMatrixd(savedmatrix);
 		glRotatef(angleX, 1, 0, 0);
 		glRotatef(angleY, 0, 1, 0);
 	}
 	else {
 		glLoadIdentity();
-		glLoadMatrixd(savedmatrix);
 		glRotatef(angleX, 1, 0, 0);
 		glRotatef(angleY, 0, 1, 0);
 		angleX = 0;
 		angleY = 0;
-		glGetDoublev(GL_MODELVIEW_MATRIX, savedmatrix);
 	}
 
 	drawCube();
@@ -518,71 +563,17 @@ void display() {
 
 }
 
-void keyboard(unsigned char key, int x, int y) {
 
-	if (key=='Q') {
-		cube.front_anticlock();
-		cube.printCube();
-	}
-	else if (key=='q') {
-		cube.front_clock();
-		cube.printCube();
-	}
-
-	if (key=='W') {
-		cube.back_anticlock();
-		cube.printCube();
-	}
-	else if (key=='w') {
-		cube.back_clock();
-		cube.printCube();
-	}
-
-	if (key=='A') {
-		cube.left_anticlock();
-		cube.printCube();
-	}
-	else if (key=='a') {
-		cube.left_clock();
-		cube.printCube();
-	}
-
-	if (key=='S') {
-		cube.right_anticlock();
-		cube.printCube();
-	}
-	else if (key=='s') {
-		cube.right_clock();
-		cube.printCube();
-	}
-
-	if (key=='Z') {
-		cube.top_anticlock();
-		cube.printCube();
-	}
-	else if (key=='z') {
-		cube.top_clock();
-		cube.printCube();
-	}
-
-	if (key=='X') {
-		cube.bottom_anticlock();
-		cube.printCube();
-	}
-	else if (key=='x') {
-		cube.bottom_clock();
-		cube.printCube();
-	}
-
-}
 
 int main(int argc, char *argv[]) {
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_DEPTH);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(width, height);
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Rubics Cube");
+
+	
 	glutDisplayFunc(display);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
