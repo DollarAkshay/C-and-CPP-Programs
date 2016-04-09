@@ -33,7 +33,7 @@ using namespace std;
 #define ll long long
 #define MOD 1000000007
 
-FILE *fp = fopen("testcase.txt", "w");
+FILE *fp = fopen("input.txt", "w");
 
 mt19937 mt(26640195);
 
@@ -82,14 +82,20 @@ void randomArray(ll int low,ll int high,int n) {
 
 int main(){
 
-	ll int t = 100000;
+	ll int t = 100;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		int l = randomInt(1, 20);
-		randomString('a', 6, l);
-		randomString('a', 6, l);
+		int len = randomInt(8, 15);
+		REP(i, len) {
+			if (randomInt(0, 2))
+				fprintf(fp, "-");
+			else
+				fprintf(fp, "+");
+		}
+		fprintf(fp, "\n");
 	}
+
 	printf("\nDONE :)\n\n");
 	fclose(fp);
 	sp;
