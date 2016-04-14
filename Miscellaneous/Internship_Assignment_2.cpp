@@ -1,8 +1,9 @@
+
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
 // 
 
@@ -46,7 +47,7 @@ ll int solve(int i, int j) {
 
 	if (i==n-1 && j==m-1)		// If it is the bottom most right corner then return that value
 		DP[i][j] = a[i][j];
-	else 
+	else
 		DP[i][j] = a[i][j] + max(solve(i+1, j), solve(i, j+1));		// Else find the maximum of the right and down values
 
 
@@ -54,26 +55,26 @@ ll int solve(int i, int j) {
 
 }
 
-int main(){
+int main() {
 
 	int t;
 	printf("Enter no of Testcases : ");
 	scanf("%d", &t);
-	FOR(tc, 1, t){
+	FOR(tc, 1, t) {
 		printf("\nEnter size of the table : ");
 		scanf("%d %d", &n, &m);
 
 		printf("\nEnter the Matrix :\n");
-		FOR(i, 0, n-1) 
-			FOR(j, 0, m-1) 
-				scanf("%d", &a[i][j]);
-			
-		
-		printf("\Alg Ans = %lld\n", solve(0, 0));
+		FOR(i, 0, n-1)
+			FOR(j, 0, m-1)
+			scanf("%d", &a[i][j]);
+
+
+		printf("\n Ans = %lld\n", solve(0, 0));
 
 		FOR(i, 0, n-1)
 			FOR(j, 0, m-1)
-				DP[i][j] = 0;
+			DP[i][j] = 0;
 
 	}
 	printf("\n");
@@ -81,4 +82,4 @@ int main(){
 	return 0;
 }
 
-//
+//Solved O(m*n)  

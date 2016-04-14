@@ -1,4 +1,4 @@
-#if 0
+
 
 /*~~~~~~~~~~~~~~~~~~*
 *                  *
@@ -84,11 +84,11 @@ void randomArray(ll int low, ll int high, int n) {
 
 int main() {
 
-	ll int t = 5;
+	ll int t = 1;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		int n = randomInt(10, 15), m = randomInt(10, 15);
+		int n = randomInt(5, 8), m = randomInt(10, 15);
 		fprintf(fp, "%d %d\n", n, m);
 
 		REP(i, n) {
@@ -106,6 +106,3 @@ int main() {
 }
 
 
-
-
-#endif // 0
