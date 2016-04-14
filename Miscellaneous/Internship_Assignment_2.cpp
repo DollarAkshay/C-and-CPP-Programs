@@ -33,8 +33,8 @@ using namespace std;
 #define ll long long
 
 int n, m;
-ll int DP[1000][1000];
-int a[1000][1000];
+ll int DP[10000][10000];
+int a[10000][10000];
 
 ll int solve(int i, int j) {
 
@@ -67,10 +67,10 @@ int main() {
 		printf("\nEnter the Matrix :\n");
 		FOR(i, 0, n-1)
 			FOR(j, 0, m-1)
-			scanf("%d", &a[i][j]);
+				scanf("%d", &a[i][j]);
 
 
-		printf("\n Ans = %lld\n", solve(0, 0));
+		printf("\nAns = %lld\n", solve(0, 0));
 
 		FOR(i, 0, n-1)
 			FOR(j, 0, m-1)
