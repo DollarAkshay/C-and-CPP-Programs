@@ -41,8 +41,6 @@ using namespace std;
 #define pii pair<int,int>
 #define MOD 1000000007
 
-int a[100000];
-
 string flip(string s, int k) {
 
 	string res = s;
@@ -52,37 +50,6 @@ string flip(string s, int k) {
 
 	return res;
 
-}
-
-int bfs(string src) {
-
-	if (src.find('-')==-1)
-		return 0;
-
-	set<string> v;
-
-	queue<pair<string, int>> q;
-
-	q.push(mp(src, 0));
-	v.insert(src);
-
-	while (!q.empty()) {
-		string u = q.front().first;
-		int d = q.front().second;
-		q.pop();
-
-		FOR(i, 1, u.length()) {
-			string neigh = flip(u, i);
-			if (v.find(neigh)==v.end()) {
-				v.insert(neigh);
-				q.push(mp(neigh, d+1));
-				if (neigh.find('-')==-1)
-					return d+1;
-			}
-		}
-	}
-
-	return -1;
 }
 
 int solve(string s, int j) {
@@ -108,8 +75,8 @@ int solve(string s, int j) {
 
 int main(){
 
-	FILE *in = stdin;
-	FILE *out = stdout;
+	FILE *in = fopen("input.txt", "r");
+	FILE *out = fopen("output.txt", "w");
 
 	int t, n;
 	fscanf(in, "%d", &t);
@@ -119,11 +86,8 @@ int main(){
 		fscanf(in, "%[^\n]", str);
 		fgetc(in);
 		string s = str;
-		int res1 = bfs(s);
-		int res2 = solve(s, s.find_last_of('-'));
-
-		fprintf(out, "Case #%d: %d\n\n", tc+1, res);
-		
+		int res = solve(s, s.find_last_of('-'));
+		fprintf(out, "Case #%d: %d\n", tc+1, res);
 	}
 	fclose(in);
 	fclose(out);
@@ -131,4 +95,4 @@ int main(){
 	return 0;
 }
 
-//
+//Solved the Small Testcases. Hopefully the Large one is right too :)

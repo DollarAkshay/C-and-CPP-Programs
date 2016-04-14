@@ -1,8 +1,10 @@
+#if 0
+
 /*~~~~~~~~~~~~~~~~~~*
- *                  *
- * $Dollar Akshay$  *
- *                  *
- *~~~~~~~~~~~~~~~~~~*/
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
 
 
 #include <stdio.h>
@@ -47,7 +49,7 @@ ll int randomInt(ll int low, ll int high) {
 
 void randomLowerString(int len) {
 
-	REP(i, len) 
+	REP(i, len)
 		fprintf(fp, "%c", 'a'+rand()%26);
 	fprintf(fp, "\n");
 
@@ -69,7 +71,7 @@ void randomUpperString(int len) {
 
 }
 
-void randomArray(ll int low,ll int high,int n) {
+void randomArray(ll int low, ll int high, int n) {
 
 	REP(i, n) {
 		if (n%10000==0 && n>0)
@@ -80,25 +82,30 @@ void randomArray(ll int low,ll int high,int n) {
 
 }
 
-int main(){
+int main() {
 
-	ll int t = 100;
+	ll int t = 5;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		int len = randomInt(8, 15);
-		REP(i, len) {
-			if (randomInt(0, 2))
-				fprintf(fp, "-");
-			else
-				fprintf(fp, "+");
+		int n = randomInt(10, 15), m = randomInt(10, 15);
+		fprintf(fp, "%d %d\n", n, m);
+
+		REP(i, n) {
+			REP(j, m)
+				fprintf(fp, "%3d ", randomInt(1, 999));
+			fprintf(fp, "\n");
 		}
-		fprintf(fp, "\n");
 	}
 
 	printf("\nDONE :)\n\n");
 	fclose(fp);
 	sp;
 	return 0;
+
 }
 
+
+
+
+#endif // 0
