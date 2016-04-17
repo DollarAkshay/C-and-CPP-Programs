@@ -35,6 +35,18 @@ using namespace Eigen;
 #define REP(i,n) FOR(i,0,(int)n-1)
 #define ll long long
 
+class point {
+public:
+	double x, y, z;
+	point() {
+
+	}
+	point(double px, double py, double pz) {
+		x = px;
+		y = py;
+		z = pz;
+	}
+};
 
 class color {
 
@@ -59,7 +71,7 @@ public :
 class State {
 
 	/*
-	0 - Front 
+	0 - Front
 	1 - Back
 	2 - Left
 	3 - Right
@@ -381,18 +393,65 @@ public:
 bool change = false;
 int width = 600, height = 600;
 int px = -1, py = -1;
-float angleY = 0, angleX = 0;
+int cube_size = 3;
+int rotationType = 0;
 const double PI = 3.1415926535;
-
+double rorationSpeed = 0.05;
+double totalRotation = 0;
+Vector3d rotationAxis;
 State cube;
-Quaterniond camera = Quaterniond{ AngleAxisd{1,Vector3d{0,0,0}} };
+Quaterniond camera = Quaterniond{ AngleAxisd{1, Vector3d{0,0,0}} };
 
-color colorList[6] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0) };
+vector<point> rotationQueue;
+color colorList[7] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0), color(0.2,0.2,0.2) };
 
-float v[8][3] = { {-1,+1,+1}, {+1,+1,+1}, {+1,-1,+1}, {-1,-1,+1},
-				  {-1,+1,-1}, {+1,+1,-1}, {+1,-1,-1}, {-1,-1,-1} };
+Quaterniond cubesRotation[5][5][5];
 
-double modelMat[16], test[16];
+void changeState() {
+
+	REP(a, rotationQueue.size()) {
+		point mci = rotationQueue[a];
+		int i = mci.z, j = mci.y, k = mci.x;
+		cubesRotation[i][j][k] = Quaterniond{ AngleAxisd{ 1, Vector3d{ 0,0,0 } } };
+	}
+
+	rotationQueue.clear();
+	totalRotation = 0;
+
+	if (rotationType==1) 
+		cube.front_anticlock();
+	else if (rotationType==2) 
+		cube.back_anticlock();
+	else if (rotationType==3) 
+		cube.left_anticlock();
+	else if (rotationType==4) 
+		cube.right_anticlock();
+	else if (rotationType==5) 
+		cube.up_anticlock();
+	else if (rotationType==6) 
+		cube.down_anticlock();
+
+	else if (rotationType==7) 
+		cube.front_clock();
+	else if (rotationType==8)
+		cube.back_clock();
+	else if (rotationType==9)
+		cube.left_clock();
+	else if (rotationType==10)
+		cube.right_clock();
+	else if (rotationType==11)
+		cube.up_clock();
+	else if (rotationType==12)
+		cube.down_clock();
+
+	cube.printCube();
+	rotationType = 0;
+	
+}
+
+inline double degtorad(double deg) {
+	return PI*deg/180;
+}
 
 void printMatrix(double m[]) {
 
@@ -421,58 +480,127 @@ double* getRotationMatrix(Quaterniond &q) {
 
 void keyboard(unsigned char key, int x, int y) {
 
-	if (key=='Q') {
-		cube.front_anticlock();
-		cube.printCube();
-	}
-	else if (key=='q') {
-		cube.front_clock();
-		cube.printCube();
-	}
-
-	if (key=='W') {
-		cube.back_anticlock();
-		cube.printCube();
-	}
-	else if (key=='w') {
-		cube.back_clock();
-		cube.printCube();
-	}
-
-	if (key=='A') {
-		cube.left_anticlock();
-		cube.printCube();
-	}
-	else if (key=='a') {
-		cube.left_clock();
-		cube.printCube();
-	}
-
-	if (key=='S') {
-		cube.right_anticlock();
-		cube.printCube();
-	}
-	else if (key=='s') {
-		cube.right_clock();
-		cube.printCube();
-	}
-
-	if (key=='Z') {
-		cube.up_anticlock();
-		cube.printCube();
-	}
-	else if (key=='z') {
-		cube.up_clock();
-		cube.printCube();
-	}
-
-	if (key=='X') {
-		cube.down_anticlock();
-		cube.printCube();
-	}
-	else if (key=='x') {
-		cube.down_clock();
-		cube.printCube();
+	if (rotationType==0) {
+		if (key=='Q') {
+			rotationAxis = { 0, 0, 1 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( j, i, 0 ));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 1;
+		}
+		else if (key=='q') {
+			rotationAxis = { 0, 0, 1 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( j, i, 0 ));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 7;
+		}
+		else if (key=='W') {
+			rotationAxis = { 0, 0, 1 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( j, i, cube_size-1));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 2;
+		}
+		else if (key=='w') {
+			rotationAxis = { 0, 0, 1 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( j, i, cube_size-1));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 8;
+		}
+		else if (key=='A') {
+			rotationAxis = { 1, 0, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( 0, i, j ));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 3;
+		}
+		else if (key=='a') {
+			rotationAxis = { 1, 0, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( 0, i, j ));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 9;
+		}
+		else if (key=='S') {
+			rotationAxis = { 1, 0, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( cube_size-1, i, j ));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 4;
+		}
+		else if (key=='s') {
+			rotationAxis = { 1, 0, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( cube_size-1, i, j ));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 10;
+		}
+		else if (key=='Z') {
+			rotationAxis = { 0, 1, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( i, 0, j ));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 5;
+		}
+		else if (key=='z') {
+			rotationAxis = { 0, 1, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( i, 0, j ));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 11;
+		}
+		else if (key=='X') {
+			rotationAxis = { 0, 1, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( i, cube_size-1, j ));
+			}
+			if (rorationSpeed>0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 6;
+		}
+		else if (key=='x') {
+			rotationAxis = { 0, 1, 0 };
+			REP(i, cube_size) {
+				REP(j, cube_size)
+					rotationQueue.push_back(point( i, cube_size-1, j ));
+			}
+			if (rorationSpeed<0)
+				rorationSpeed = -rorationSpeed;
+			rotationType = 12;
+		}
 	}
 
 }
@@ -518,13 +646,13 @@ void reshape(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-2*widthScale, 2*widthScale, -2*heightScale, 2*heightScale, -2, 2);
+	glOrtho(-2*widthScale, 2*widthScale, -2*heightScale, 2*heightScale, -5, 5);
 	glMatrixMode(GL_MODELVIEW);
 }
 
 void drawFace(float *a, float *b, float *c, float *d, int face) {
 
-	glColor3f(1, 1, 1);
+	glColor3fv(colorList[face].getArray());
 	glBegin(GL_QUADS);
 	glVertex3fv(a);
 	glVertex3fv(b);
@@ -532,50 +660,102 @@ void drawFace(float *a, float *b, float *c, float *d, int face) {
 	glVertex3fv(d);
 	glEnd();
 
-	int constComp[3], iComp[3], jComp[3];
-
-	REP(i, 3) {
-		constComp[i] = 1-abs(a[i]-c[i])/2;
-		iComp[i] = (a[i]-d[i])/2;
-		jComp[i] = (b[i]-a[i])/2;
-	}
-
-
-	FOR(i, 0, 2) {
-		FOR(j, 0, 2) {
-			glColor3f(colorList[cube.faces[face][i][j]].r, colorList[cube.faces[face][i][j]].g, colorList[cube.faces[face][i][j]].b);
-			glBegin(GL_QUADS);
-			glVertex3f(a[0] + (0.05 + j*0.65)*jComp[0] - (0.05 + i*0.65)*iComp[0] + constComp[0]*0.01*a[0]/fabs(a[0]),
-					   a[1] + (0.05 + j*0.65)*jComp[1] - (0.05 + i*0.65)*iComp[1] + constComp[1]*0.01*a[1]/fabs(a[1]),
-					   a[2] + (0.05 + j*0.65)*jComp[2] - (0.05 + i*0.65)*iComp[2] + constComp[2]*0.01*a[2]/fabs(a[2]));
-
-			glVertex3f(a[0] + (0.65 + j*0.65)*jComp[0] - (0.05 + i*0.65)*iComp[0] + constComp[0]*0.01*a[0]/fabs(a[0]),
-					   a[1] + (0.65 + j*0.65)*jComp[1] - (0.05 + i*0.65)*iComp[1] + constComp[1]*0.01*a[1]/fabs(a[1]),
-					   a[2] + (0.65 + j*0.65)*jComp[2] - (0.05 + i*0.65)*iComp[2] + constComp[2]*0.01*a[2]/fabs(a[2]));
-
-			glVertex3f(a[0] + (0.65 + j*0.65)*jComp[0] - (0.65 + i*0.65)*iComp[0] + constComp[0]*0.01*a[0]/fabs(a[0]),
-					   a[1] + (0.65 + j*0.65)*jComp[1] - (0.65 + i*0.65)*iComp[1] + constComp[1]*0.01*a[1]/fabs(a[1]),
-					   a[2] + (0.65 + j*0.65)*jComp[2] - (0.65 + i*0.65)*iComp[2] + constComp[2]*0.01*a[2]/fabs(a[2]));
-
-			glVertex3f(a[0] + (0.05 + j*0.65)*jComp[0] - (0.65 + i*0.65)*iComp[0] + constComp[0]*0.01*a[0]/fabs(a[0]),
-					   a[1] + (0.05 + j*0.65)*jComp[1] - (0.65 + i*0.65)*iComp[1] + constComp[1]*0.01*a[1]/fabs(a[1]),
-					   a[2] + (0.05 + j*0.65)*jComp[2] - (0.65 + i*0.65)*iComp[2] + constComp[2]*0.01*a[2]/fabs(a[2]));
-			glEnd();
-			glFlush();
-		}
-	}
 }
 
-void drawCube() {
+void drawCube(float *a, float *b, float *c, float *d, 
+			  float *e, float *f, float *g, float *h,
+			  int x, int y, int z) {
 
-	glColor3f(1, 1, 1);
+	int front=6, back=6, left=6, right=6, up=6, down=6;
 
-	drawFace(v[0], v[1], v[2], v[3], 0);		// Front
-	drawFace(v[5], v[4], v[7], v[6], 1);		// Back
-	drawFace(v[4], v[0], v[3], v[7], 2);		// Left
-	drawFace(v[1], v[5], v[6], v[2], 3);		// Right
-	drawFace(v[4], v[5], v[1], v[0], 4);		// Up
-	drawFace(v[3], v[2], v[6], v[7], 5);		// Down
+	/*
+	0 - Front
+	1 - Back
+	2 - Left
+	3 - Right
+	4 - Up
+	5 - Down
+	*/
+
+	if (z==0)
+		front = cube.faces[0][y][x];
+	if (z==cube_size-1)
+		back = cube.faces[1][y][2-x];
+
+	if (y==0)
+		up = cube.faces[4][2-z][x];
+	if (y==cube_size-1)
+		down = cube.faces[5][z][x];
+
+	if (x==0)
+		left = cube.faces[2][y][2-z];
+	if (x==cube_size-1)
+		right = cube.faces[3][y][z];
+
+
+	drawFace(a, b, c, d, front);		// Front
+	drawFace(f, e, h, g, back);		// Back
+	drawFace(e, a, d, h, left);		// Left
+	drawFace(b, f, g, c, right);		// Right
+	drawFace(e, f, b, a, up);		// Up
+	drawFace(d, c, g, h, down);		// Down
+
+}
+
+void buildRubiksCube() {
+
+	float small_size = 0.7 - (cube_size-3)*0.2;
+	float big_szie = small_size*cube_size;
+	float intercube_spacing = small_size*0.05;
+
+	float start = big_szie/2 + intercube_spacing*(cube_size-1)/2;
+
+	for (float z = start; z>-start; z-= small_size+intercube_spacing) {
+		for (float y = start; y>-start; y-= small_size+intercube_spacing) {
+			for (float x = -start; x<start; x += small_size+intercube_spacing) {
+
+				int cx = (int)round((x+big_szie/2)/(small_size+intercube_spacing));
+				int cy = (int)round((-y+big_szie/2)/(small_size+intercube_spacing));
+				int cz = (int)round((-z+big_szie/2)/(small_size+intercube_spacing));
+
+				glPushMatrix();
+				glMultMatrixd(getRotationMatrix(cubesRotation[cz][cy][cx]));
+
+				float v[8][3] = { 
+					{ x, y, z },
+					{ x+small_size, y, z },
+					{ x+small_size, y-small_size, z },
+					{ x, y-small_size, z },
+					{ x, y, z-small_size },
+					{ x+small_size, y, z-small_size },
+					{ x+small_size, y-small_size, z-small_size },
+					{ x, y-small_size, z-small_size } 
+				};
+
+				drawCube(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], cx, cy, cz);
+				glPopMatrix();
+			}
+		}
+	}
+
+
+}
+
+void updateRotation() {
+
+	
+	REP(a, rotationQueue.size()) {
+		point mci = rotationQueue[a];
+		int i = mci.z, j = mci.y, k = mci.x;
+		Quaterniond qr = Quaterniond{ AngleAxisd{ degtorad(rorationSpeed), rotationAxis} };
+		cubesRotation[i][j][k] = qr*cubesRotation[i][j][k];
+	}
+
+	totalRotation += rorationSpeed;
+
+	if (totalRotation>=90 || totalRotation<=-90) {
+		changeState();
+	}
 
 }
 
@@ -588,10 +768,33 @@ void display() {
 	glLoadIdentity();
 	glMultMatrixd(getRotationMatrix(camera));
 	
-	drawCube();
+	buildRubiksCube();
+
+	if (rotationType) {
+		updateRotation();
+	}
 
 	glutSwapBuffers();
 	glutPostRedisplay();
+
+}
+
+void init() {
+
+	glutDisplayFunc(display);
+	glutMouseFunc(mouse);
+	glutKeyboardFunc(keyboard);
+	glutMotionFunc(motion);
+	glutReshapeFunc(reshape);
+	glutMouseWheelFunc(mouseWheel);
+
+	REP(i, cube_size) {
+		REP(j, cube_size) {
+			REP(k, cube_size) {
+				cubesRotation[i][j][k] = Quaterniond{ AngleAxisd{1,Vector3d{0,0,0}} };
+			}
+		}
+	}
 
 }
 
@@ -604,12 +807,7 @@ int main(int argc, char *argv[]) {
 	glutInitWindowPosition(0, 0);
 	glutCreateWindow("Rubics Cube");
 
-	glutDisplayFunc(display);
-	glutMouseFunc(mouse);
-	glutKeyboardFunc(keyboard);
-	glutMotionFunc(motion);
-	glutReshapeFunc(reshape);
-	glutMouseWheelFunc(mouseWheel);
+	init();
 
 	glEnable(GL_DEPTH_TEST);
 	glLoadIdentity();
@@ -618,4 +816,4 @@ int main(int argc, char *argv[]) {
 
 }
 
-//
+// :)
