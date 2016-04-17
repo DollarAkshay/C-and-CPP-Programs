@@ -396,7 +396,7 @@ int px = -1, py = -1;
 int cube_size = 3;
 int rotationType = 0;
 const double PI = 3.1415926535;
-double rorationSpeed = 0.05;
+double rorationSpeed = 0.10;
 double totalRotation = 0;
 Vector3d rotationAxis;
 State cube;
@@ -704,7 +704,7 @@ void drawCube(float *a, float *b, float *c, float *d,
 
 void buildRubiksCube() {
 
-	float small_size = 0.7 - (cube_size-3)*0.2;
+	float small_size = 0.6 - (cube_size-3)*0.2;
 	float big_szie = small_size*cube_size;
 	float intercube_spacing = small_size*0.05;
 
@@ -787,7 +787,6 @@ void init() {
 	glutMotionFunc(motion);
 	glutReshapeFunc(reshape);
 	glutMouseWheelFunc(mouseWheel);
-
 	REP(i, cube_size) {
 		REP(j, cube_size) {
 			REP(k, cube_size) {
