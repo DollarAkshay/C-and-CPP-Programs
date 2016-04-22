@@ -4,7 +4,7 @@
 *                  *
 *~~~~~~~~~~~~~~~~~~*/
 
-//https://www.hackerrank.com/challenges/dip-morphological-operations-closing
+//https://www.hackerrank.com/challenges/dip-morphological-operations-erosion
 
 #include <math.h>
 #include <time.h>
