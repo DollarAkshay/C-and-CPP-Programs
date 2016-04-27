@@ -43,20 +43,20 @@ using namespace std;
 
 struct node {
 	int l, r;
-	int minval, maxval, bestval;
+	ll int minval, maxval, bestval;
 };
 
 node SegTree[131073];
-int a[50000], sum[50000];
+ll int a[50005], sum[50005];
 
-int rangeMaxQuerry(int node, int querryl, int querryr) {
+ll int rangeMaxQuerry(int node, int querryl, int querryr) {
 
 	int nodel = SegTree[node].l, noder = SegTree[node].r;
 
 	if (nodel>=querryl && noder<=querryr)
 		return SegTree[node].bestval;
 	else if (noder<querryl || nodel>querryr)
-		return INT16_MIN;
+		return INT32_MIN;
 	else {
 		return max(rangeMaxQuerry(node*2+1, querryl, querryr),
 				   rangeMaxQuerry(node*2+2, querryl, querryr));
@@ -76,8 +76,7 @@ void constructTreeRange(int node, int l, int r) {
 	}
 }
 
-
-int constructMaxTree(int node) {
+ll int constructMaxTree(int node) {
 
 	int l = SegTree[node].l, r = SegTree[node].r;
 
@@ -91,7 +90,7 @@ int constructMaxTree(int node) {
 
 }
 
-int constructMinTree(int node) {
+ll int constructMinTree(int node) {
 
 	int l = SegTree[node].l, r = SegTree[node].r;
 
@@ -105,16 +104,16 @@ int constructMinTree(int node) {
 
 }
 
-int constructBestTree(int node) {
+ll int constructBestTree(int node) {
 
 	int l = SegTree[node].l, r = SegTree[node].r;
 
 	if (l==r) {
-		SegTree[node].bestval = sum[l];
+		SegTree[node].bestval = a[l];
 	}
 	else {
-		int leftbest = constructBestTree(node*2+1);
-		int rightbest = constructBestTree(node*2+2);
+		ll int leftbest = constructBestTree(node*2+1);
+		ll int rightbest = constructBestTree(node*2+2);
 		SegTree[node].bestval = max(SegTree[node*2+2].maxval-SegTree[node*2+1].minval, 
 									max(leftbest, rightbest));
 	}
@@ -125,10 +124,13 @@ int constructBestTree(int node) {
 int main(){
 
 	int n, q;
+	bool neg=0;
 	scanf("%d", &n);
 	REP(i, n) {
-		scanf("%d", &a[i]);
+		scanf("%lld", &a[i]);
 		sum[i] = i?sum[i-1]+a[i]:a[i];
+		if (sum[i]<0)
+			neg = 1;
 	}
 
 	constructTreeRange(0, 0, n-1);
@@ -140,11 +142,11 @@ int main(){
 	REP(i, q) {
 		int l, r;
 		scanf("%d %d", &l, &r);
-		printf("%d\n", rangeMaxQuerry(0, l-1, r-1));
+		printf("%lld\n",  + (neg?rangeMaxQuerry(0, l-1, r-1):sum[r-1]-sum[l-1]+a[l-1]));
 	}
 	
 	sp;
 	return 0;
 }
 
-//Solved :D First ever Segment Tree Problem Solved :D
+//Not Solved :/
