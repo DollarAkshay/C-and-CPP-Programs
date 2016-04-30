@@ -82,20 +82,56 @@ void randomArray(ll int low, ll int high, int n) {
 
 }
 
+string generatenumberstring(int len) {
+
+	string res;
+
+	while (res.size()<len) {
+		int rand = randomInt(0, 9);
+		if (rand==0)
+			res += "ZERO";
+		else if (rand==1)
+			res += "ONE";
+		else if (rand==2)
+			res += "TWO";
+		else if (rand==3)
+			res += "THREE";
+		else if (rand==4)
+			res += "FOUR";
+		else if (rand==5)
+			res += "FIVE";
+		else if (rand==6)
+			res += "SIX";
+		else if (rand==7)
+			res += "SEVEN";
+		else if (rand==8)
+			res += "EIGHT";
+		else if (rand==9)
+			res += "NINE";
+	}
+
+	REP(i, res.size()/2) {
+		int a = randomInt(0, res.size()-1);
+		int b = randomInt(0, res.size()-1);
+
+		char t = res[a];
+		res[a] = res[b];
+		res[b] = t;
+	}
+
+	return res;
+
+}
+
 int main() {
 
-	ll int t = 1;
+	ll int t = 100;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		int n = randomInt(5, 8), m = randomInt(10, 15);
-		fprintf(fp, "%d %d\n", n, m);
+		string s = generatenumberstring(2000);
+		fprintf(fp, "%s\n", s.c_str());
 
-		REP(i, n) {
-			REP(j, m)
-				fprintf(fp, "%3d ", randomInt(1, 999));
-			fprintf(fp, "\n");
-		}
 	}
 
 	printf("\nDONE :)\n\n");
