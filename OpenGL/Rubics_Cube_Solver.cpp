@@ -34,9 +34,10 @@ using namespace Eigen;
 #define FORD(i,a,b) for(int i=a;i>=b;--i)
 #define REP(i,n) FOR(i,0,(int)n-1)
 #define ll long long
-#define CUBE_SIZE 20
+#define CUBE_SIZE 10
 
 int layer = 0;
+int width = 1200, height = 750;
 
 class point {
 public:
@@ -56,6 +57,12 @@ class color {
 public :
 	float r, g, b;
 
+	color() {
+		r = 0;
+		g = 0;
+		b = 0;
+	}
+
 	color(float ir, float ig, float ib) {
 		r = ir;
 		g = ig;
@@ -71,6 +78,134 @@ public :
 	}
 };
 
+class button {
+
+public :
+
+	const float xelev = 0.07;
+	const float yelev = 0.05;
+	const float xshadowMul = 0.7;
+	const float yshadowMul = 0.5;
+	const float clickdelay = 200;
+
+	bool is3D, isAnimating;
+	float x, y;
+	float xoff, yoff;
+	float w, h;
+	color bg, fg;
+	color yshadow, xshadow;
+	string text;
+
+	button() {
+		is3D = true;
+		isAnimating = false;
+		x = 0;
+		y = 0;
+		xoff = yoff = 0;
+		w = 1;
+		h = 0.35;
+		bg = color(0.9, 0.9, 0.9);
+		xshadow = color(bg.r*xshadowMul, bg.g*xshadowMul, bg.b*xshadowMul);
+		yshadow = color(bg.r*yshadowMul, bg.g*yshadowMul, bg.b*yshadowMul);
+		fg = color(0, 0, 0);
+		text = "Button";
+	}
+
+	button(float px, float py, float iw, float ih) {
+		x = px;
+		y = py;
+		w = iw;
+		h = ih;
+		is3D = true;
+		isAnimating = false;
+		xoff = yoff = 0;
+		bg = color(0.9, 0.9, 0.9);
+		xshadow = color(bg.r*xshadowMul, bg.g*xshadowMul, bg.b*xshadowMul);
+		yshadow = color(bg.r*yshadowMul, bg.g*yshadowMul, bg.b*yshadowMul);
+		fg = color(0, 0, 0);
+		text = "Button";
+	}
+
+	button(float px, float py, float iw, float ih, color background, color foreground, string disptext) {
+		x = px;
+		y = py;
+		w = iw;
+		h = ih;
+		is3D = true;
+		isAnimating = false;
+		bg = background;
+		xshadow = color(bg.r*xshadowMul, bg.g*xshadowMul, bg.b*xshadowMul);
+		yshadow = color(bg.r*yshadowMul, bg.g*yshadowMul, bg.b*yshadowMul);
+		fg = foreground;
+		text = disptext;
+		xoff = yoff = 0;
+	}
+
+	void draw() {
+
+		glColor3fv(bg.getArray());
+		glBegin(GL_POLYGON);
+		glVertex3f(x+xoff, y+yoff, 1);
+		glVertex3f(x+w+xoff, y+yoff, 1);
+		glVertex3f(x+w+xoff, y-h+yoff, 1);
+		glVertex3f(x+xoff, y-h+yoff, 1);
+		glEnd();
+
+		if (is3D) {
+			// Top Side
+			glColor3fv(yshadow.getArray());
+			glBegin(GL_POLYGON);
+			glVertex3f(x+xoff, y+yoff, 1);
+			glVertex3f(x+w+xoff, y+yoff, 1);
+			glVertex3f(x+w+xelev, y+yelev, 0);
+			glVertex3f(x+xelev, y+yelev, 0);
+			glEnd();
+
+			// Right Side
+			glColor3fv(xshadow.getArray());
+			glBegin(GL_POLYGON);
+			glVertex3f(x+w+xoff, y+yoff, 1);
+			glVertex3f(x+w+xelev, y+yelev, 0);
+			glVertex3f(x+w+xelev, y-h+yelev, 0);
+			glVertex3f(x+w+xoff, y-h+yoff, 1);
+			glEnd();
+		}
+
+		glPushMatrix();
+		glTranslatef(x+xoff+(w-text.size()*0.135)/2, y+yoff-(h+0.12)/2, 1.1);
+		glScalef(1/800.0, 1/800.0, 0);
+		glLineWidth(2);
+		glColor3fv(fg.getArray());
+		
+		REP(i, text.size())
+			glutStrokeCharacter(GLUT_STROKE_MONO_ROMAN, text[i]);
+		glPopMatrix();
+
+	}
+
+	bool collision(float px, float py) {
+		if (!isAnimating && px>x+xoff && px<x+w+xoff && py>y-h+yoff && py<y+yoff)
+			return true;
+		return false;
+	}
+
+	void animate() {
+
+		if (isAnimating) {
+			xoff += xelev/clickdelay;
+			yoff += yelev/clickdelay;
+
+			if (xoff+x>=x+xelev)
+				isAnimating = false;
+		}
+		else {
+			xoff = max(0, xoff-xelev/clickdelay);
+			yoff = max(0, yoff-yelev/clickdelay);
+		}
+	}
+	
+};
+
 class State {
 
 	/*
@@ -83,7 +218,7 @@ class State {
 	*/
 
 public:
-	char faces[6][CUBE_SIZE][CUBE_SIZE];
+	int faces[6][CUBE_SIZE][CUBE_SIZE];
 
 	State() {
 		REP(k, 6) {
@@ -164,12 +299,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[0][layer][CUBE_SIZE-1-i];
-				faces[0][layer][CUBE_SIZE-1-i] = faces[0][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[0][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[0][CUBE_SIZE-1-layer][i];
-				faces[0][CUBE_SIZE-1-layer][i] = faces[0][i][layer];
-				faces[0][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[0][l][CUBE_SIZE-1-i];
+					faces[0][l][CUBE_SIZE-1-i] = faces[0][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[0][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[0][CUBE_SIZE-1-l][i];
+					faces[0][CUBE_SIZE-1-l][i] = faces[0][i][l];
+					faces[0][i][l] = t[i];
+				}
 			}
 		}
 
@@ -188,12 +325,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[0][layer][i];
-				faces[0][layer][i] = faces[0][CUBE_SIZE-1-i][layer];
-				faces[0][CUBE_SIZE-1-i][layer] = faces[0][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[0][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[0][i][CUBE_SIZE-1-layer];
-				faces[0][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[0][l][i];
+					faces[0][l][i] = faces[0][CUBE_SIZE-1-i][l];
+					faces[0][CUBE_SIZE-1-i][l] = faces[0][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[0][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[0][i][CUBE_SIZE-1-l];
+					faces[0][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 
@@ -211,12 +350,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[1][layer][CUBE_SIZE-1-i];
-				faces[1][layer][CUBE_SIZE-1-i] = faces[1][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[1][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[1][CUBE_SIZE-1-layer][i];
-				faces[1][CUBE_SIZE-1-layer][i] = faces[1][i][layer];
-				faces[1][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[1][l][CUBE_SIZE-1-i];
+					faces[1][l][CUBE_SIZE-1-i] = faces[1][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[1][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[1][CUBE_SIZE-1-l][i];
+					faces[1][CUBE_SIZE-1-l][i] = faces[1][i][l];
+					faces[1][i][l] = t[i];
+				}
 			}
 		}
 	}
@@ -233,12 +374,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[1][layer][i];
-				faces[1][layer][i] = faces[1][CUBE_SIZE-1-i][layer];
-				faces[1][CUBE_SIZE-1-i][layer] = faces[1][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[1][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[1][i][CUBE_SIZE-1-layer];
-				faces[1][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[1][l][i];
+					faces[1][l][i] = faces[1][CUBE_SIZE-1-i][l];
+					faces[1][CUBE_SIZE-1-i][l] = faces[1][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[1][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[1][i][CUBE_SIZE-1-l];
+					faces[1][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 	}
@@ -256,12 +399,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[2][layer][CUBE_SIZE-1-i];
-				faces[2][layer][CUBE_SIZE-1-i] = faces[2][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[2][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[2][CUBE_SIZE-1-layer][i];
-				faces[2][CUBE_SIZE-1-layer][i] = faces[2][i][layer];
-				faces[2][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[2][l][CUBE_SIZE-1-i];
+					faces[2][l][CUBE_SIZE-1-i] = faces[2][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[2][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[2][CUBE_SIZE-1-l][i];
+					faces[2][CUBE_SIZE-1-l][i] = faces[2][i][l];
+					faces[2][i][l] = t[i];
+				}
 			}
 		}
 	}
@@ -279,12 +424,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[2][layer][i];
-				faces[2][layer][i] = faces[2][CUBE_SIZE-1-i][layer];
-				faces[2][CUBE_SIZE-1-i][layer] = faces[2][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[2][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[2][i][CUBE_SIZE-1-layer];
-				faces[2][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[2][l][i];
+					faces[2][l][i] = faces[2][CUBE_SIZE-1-i][l];
+					faces[2][CUBE_SIZE-1-i][l] = faces[2][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[2][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[2][i][CUBE_SIZE-1-l];
+					faces[2][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 
@@ -303,12 +450,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[3][layer][CUBE_SIZE-1-i];
-				faces[3][layer][CUBE_SIZE-1-i] = faces[3][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[3][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[3][CUBE_SIZE-1-layer][i];
-				faces[3][CUBE_SIZE-1-layer][i] = faces[3][i][layer];
-				faces[3][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[3][l][CUBE_SIZE-1-i];
+					faces[3][l][CUBE_SIZE-1-i] = faces[3][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[3][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[3][CUBE_SIZE-1-l][i];
+					faces[3][CUBE_SIZE-1-l][i] = faces[3][i][l];
+					faces[3][i][l] = t[i];
+				}
 			}
 		}
 
@@ -327,12 +476,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[3][layer][i];
-				faces[3][layer][i] = faces[3][CUBE_SIZE-1-i][layer];
-				faces[3][CUBE_SIZE-1-i][layer] = faces[3][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[3][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[3][i][CUBE_SIZE-1-layer];
-				faces[3][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[3][l][i];
+					faces[3][l][i] = faces[3][CUBE_SIZE-1-i][l];
+					faces[3][CUBE_SIZE-1-i][l] = faces[3][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[3][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[3][i][CUBE_SIZE-1-l];
+					faces[3][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 
@@ -351,12 +502,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[4][layer][CUBE_SIZE-1-i];
-				faces[4][layer][CUBE_SIZE-1-i] = faces[4][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[4][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[4][CUBE_SIZE-1-layer][i];
-				faces[4][CUBE_SIZE-1-layer][i] = faces[4][i][layer];
-				faces[4][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[4][l][CUBE_SIZE-1-i];
+					faces[4][l][CUBE_SIZE-1-i] = faces[4][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[4][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[4][CUBE_SIZE-1-l][i];
+					faces[4][CUBE_SIZE-1-l][i] = faces[4][i][l];
+					faces[4][i][l] = t[i];
+				}
 			}
 		}
 	}
@@ -374,12 +527,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[4][layer][i];
-				faces[4][layer][i] = faces[4][CUBE_SIZE-1-i][layer];
-				faces[4][CUBE_SIZE-1-i][layer] = faces[4][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[4][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[4][i][CUBE_SIZE-1-layer];
-				faces[4][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[4][l][i];
+					faces[4][l][i] = faces[4][CUBE_SIZE-1-i][l];
+					faces[4][CUBE_SIZE-1-i][l] = faces[4][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[4][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[4][i][CUBE_SIZE-1-l];
+					faces[4][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 	}
@@ -397,12 +552,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[5][layer][CUBE_SIZE-1-i];
-				faces[5][layer][CUBE_SIZE-1-i] = faces[5][CUBE_SIZE-1-i][CUBE_SIZE-1-layer];
-				faces[5][CUBE_SIZE-1-i][CUBE_SIZE-1-layer] = faces[5][CUBE_SIZE-1-layer][i];
-				faces[5][CUBE_SIZE-1-layer][i] = faces[5][i][layer];
-				faces[5][i][layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[5][l][CUBE_SIZE-1-i];
+					faces[5][l][CUBE_SIZE-1-i] = faces[5][CUBE_SIZE-1-i][CUBE_SIZE-1-l];
+					faces[5][CUBE_SIZE-1-i][CUBE_SIZE-1-l] = faces[5][CUBE_SIZE-1-l][i];
+					faces[5][CUBE_SIZE-1-l][i] = faces[5][i][l];
+					faces[5][i][l] = t[i];
+				}
 			}
 		}
 
@@ -421,12 +578,14 @@ public:
 		}
 
 		if (layer==0) {
-			REP(i, CUBE_SIZE-1) {
-				t[i] = faces[5][layer][i];
-				faces[5][layer][i] = faces[5][CUBE_SIZE-1-i][layer];
-				faces[5][CUBE_SIZE-1-i][layer] = faces[5][CUBE_SIZE-1-layer][CUBE_SIZE-1-i];
-				faces[5][CUBE_SIZE-1-layer][CUBE_SIZE-1-i] = faces[5][i][CUBE_SIZE-1-layer];
-				faces[5][i][CUBE_SIZE-1-layer] = t[i];
+			REP(l, CUBE_SIZE/2) {
+				FOR(i, l, CUBE_SIZE-2-l) {
+					t[i] = faces[5][l][i];
+					faces[5][l][i] = faces[5][CUBE_SIZE-1-i][l];
+					faces[5][CUBE_SIZE-1-i][l] = faces[5][CUBE_SIZE-1-l][CUBE_SIZE-1-i];
+					faces[5][CUBE_SIZE-1-l][CUBE_SIZE-1-i] = faces[5][i][CUBE_SIZE-1-l];
+					faces[5][i][CUBE_SIZE-1-l] = t[i];
+				}
 			}
 		}
 
@@ -446,14 +605,23 @@ public:
 
 bool hollow = false;
 bool change = false;
-int width = 600, height = 600;
+bool isTransition = false;
+
 int px = -1, py = -1;
+float screen = 0, fromScreen=0, toScreen = 0;
+float transition_percent = 0;
+float cameraX = -3, cameraY = 0, cameraZ = 0;
 
 int rotationType = 0;
 const double PI = 3.1415926535;
-double rorationSpeed = 90;
+double rorationSpeed = min(90.0, (double)CUBE_SIZE*CUBE_SIZE/150);
 double totalRotation = 0;
 Vector3d rotationAxis;
+button bstart = button(-6.5, 2, 0.8, 0.3, color(0, 0.8, 0), color(0, 0, 0), "START");
+button babout = button(-6.5, 1.5, 0.8, 0.3, color(1, 0.8, 0), color(0, 0, 0), "ABOUT");
+button bhelp = button(-6.5, 1, 0.8, 0.3, color(0, 0.6, 1), color(0, 0, 0), "HELP");
+button bexit = button(-6.5, 0.5, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "EXIT");
+
 State cube;
 Quaterniond camera = Quaterniond{ AngleAxisd{1, Vector3d{0,0,0}} };
 
@@ -462,6 +630,17 @@ vector<point> rotationQueue;
 color colorList[7] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0), color(0.2,0.2,0.2) };
 
 Quaterniond cubesRotation[CUBE_SIZE][CUBE_SIZE][CUBE_SIZE];
+
+void animateButtons() {
+
+	if (screen==0) {
+		bstart.animate();
+		babout.animate();
+		bhelp.animate();
+		bexit.animate();
+	}
+
+}
 
 void changeState() {
 
@@ -536,146 +715,147 @@ double* getRotationMatrix(Quaterniond &q) {
 void keyboard(unsigned char key, int x, int y) {
 
 	
+	if (screen==1) {
+		if (rotationType==0) {
+			if (key>='1' && key<='9') {
+				layer = min(CUBE_SIZE/2, key-'1');
+			}
+			else if (key=='+') {
+				layer = min(CUBE_SIZE/2, layer+1);
+			}
+			else if (key=='-') {
+				layer = max(0, layer-1);
+			}
+			if (key=='j' || key=='J') {
+				int cacheLayer = layer;
+				FOR(i, 1, 5) {
+					layer = rand()%(CUBE_SIZE/2);
+					rotationType = 1 + rand()%12;
+					changeState();
+				}
+				layer = cacheLayer;
+			}
 
-	if (rotationType==0) {
-		if (key>='1' && key<='9') {
-			layer = min(CUBE_SIZE/2, key-'1');
-		}
-		else if (key=='+') {
-			layer = min(CUBE_SIZE/2, layer+1);
-		}
-		else if (key=='-') {
-			layer = max(0, layer-1);
-		}
-		if (key=='j' || key=='J') {
-			int cacheLayer = layer;
-			FOR(i, 1, 5) {
-				layer = rand()%(CUBE_SIZE/2);
-				rotationType = 1 + rand()%12;
-				changeState();
+			if (key=='Q') {
+				rotationAxis = { 0, 0, 1 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(j, i, layer));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 1;
 			}
-			layer = cacheLayer;
-		}
-
-		if (key=='Q') {
-			rotationAxis = { 0, 0, 1 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( j, i, layer));
+			else if (key=='q') {
+				rotationAxis = { 0, 0, 1 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(j, i, layer));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 7;
 			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 1;
-		}
-		else if (key=='q') {
-			rotationAxis = { 0, 0, 1 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( j, i, layer));
+			else if (key=='W') {
+				rotationAxis = { 0, 0, 1 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(j, i, CUBE_SIZE-1-layer));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 2;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 7;
-		}
-		else if (key=='W') {
-			rotationAxis = { 0, 0, 1 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( j, i, CUBE_SIZE-1-layer));
+			else if (key=='w') {
+				rotationAxis = { 0, 0, 1 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(j, i, CUBE_SIZE-1-layer));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 8;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 2;
-		}
-		else if (key=='w') {
-			rotationAxis = { 0, 0, 1 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( j, i, CUBE_SIZE-1-layer));
+			else if (key=='A') {
+				rotationAxis = { 1, 0, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(layer, i, j));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 3;
 			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 8;
-		}
-		else if (key=='A') {
-			rotationAxis = { 1, 0, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( layer, i, j ));
+			else if (key=='a') {
+				rotationAxis = { 1, 0, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(layer, i, j));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 9;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 3;
-		}
-		else if (key=='a') {
-			rotationAxis = { 1, 0, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( layer, i, j ));
+			else if (key=='S') {
+				rotationAxis = { 1, 0, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(CUBE_SIZE-1-layer, i, j));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 4;
 			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 9;
-		}
-		else if (key=='S') {
-			rotationAxis = { 1, 0, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( CUBE_SIZE-1-layer, i, j ));
+			else if (key=='s') {
+				rotationAxis = { 1, 0, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(CUBE_SIZE-1-layer, i, j));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 10;
 			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 4;
-		}
-		else if (key=='s') {
-			rotationAxis = { 1, 0, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( CUBE_SIZE-1-layer, i, j ));
+			else if (key=='Z') {
+				rotationAxis = { 0, 1, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(i, layer, j));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 5;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 10;
-		}
-		else if (key=='Z') {
-			rotationAxis = { 0, 1, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( i, layer, j ));
+			else if (key=='z') {
+				rotationAxis = { 0, 1, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(i, layer, j));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 11;
 			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 5;
-		}
-		else if (key=='z') {
-			rotationAxis = { 0, 1, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( i, layer, j ));
+			else if (key=='X') {
+				rotationAxis = { 0, 1, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(i, CUBE_SIZE-1-layer, j));
+				}
+				if (rorationSpeed>0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 6;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 11;
-		}
-		else if (key=='X') {
-			rotationAxis = { 0, 1, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( i, CUBE_SIZE-1-layer, j ));
+			else if (key=='x') {
+				rotationAxis = { 0, 1, 0 };
+				REP(i, CUBE_SIZE) {
+					REP(j, CUBE_SIZE)
+						rotationQueue.push_back(point(i, CUBE_SIZE-1-layer, j));
+				}
+				if (rorationSpeed<0)
+					rorationSpeed = -rorationSpeed;
+				rotationType = 12;
 			}
-			if (rorationSpeed>0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 6;
-		}
-		else if (key=='x') {
-			rotationAxis = { 0, 1, 0 };
-			REP(i, CUBE_SIZE) {
-				REP(j, CUBE_SIZE)
-					rotationQueue.push_back(point( i, CUBE_SIZE-1-layer, j ));
-			}
-			if (rorationSpeed<0)
-				rorationSpeed = -rorationSpeed;
-			rotationType = 12;
 		}
 	}
 
@@ -690,6 +870,27 @@ void mouse(int button, int state, int x, int y) {
 
 	if (button==GLUT_LEFT_BUTTON && state==GLUT_UP) {
 		py = px = -1;
+	}
+
+	float glx = (x-(float)width/2)*8/width + cameraX;
+	float gly = ((float)height/2-y)*5/height + cameraY;
+
+	printf("Mouse Click at %f, %f\n", glx, gly);
+
+	if (screen==0) {
+		if (bstart.collision(glx, gly)) {
+			bstart.isAnimating = true;
+			screen = 0.5;
+			fromScreen = 0;
+			toScreen = 1;
+			isTransition = true;
+		}
+		else if (babout.collision(glx, gly))
+			babout.isAnimating = true;
+		else if (bhelp.collision(glx, gly))
+			bhelp.isAnimating = true;
+		else if (bexit.collision(glx, gly))
+			bexit.isAnimating = true;
 	}
 
 }
@@ -722,7 +923,7 @@ void reshape(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-2*widthScale, 2*widthScale, -2*heightScale, 2*heightScale, -5, 5);
+	glOrtho(-4*widthScale, 4*widthScale, -2.5*heightScale, 2.5*heightScale, -5, 5);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -788,6 +989,8 @@ void buildRubiksCube() {
 	double big_szie = 2.4;
 	double small_size = big_szie/CUBE_SIZE;
 	double intercube_spacing = small_size*0.05;
+	if(CUBE_SIZE>20)
+		intercube_spacing = 0;
 
 	double start = big_szie/2 + intercube_spacing*(CUBE_SIZE-1)/2;
 
@@ -840,19 +1043,47 @@ void updateRotation() {
 
 }
 
+void doTransition(int from, int to) {
+
+	if (isTransition) {
+		if (from==0 && to==1) {
+			cameraX = (100-transition_percent)/100*(-3);
+			transition_percent += 0.1;
+			if (transition_percent>=100) {
+				isTransition = false;
+				fromScreen = screen = toScreen;
+				transition_percent = 0;
+			}
+		}
+	}
+
+	glTranslatef(-cameraX, -cameraY, -cameraZ);
+}
+
 void display() {
 
 	
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
-
 	glLoadIdentity();
-	glMultMatrixd(getRotationMatrix(camera));
-	
-	buildRubiksCube();
+	animateButtons();
 
-	if (rotationType) {
-		updateRotation();
+	doTransition(fromScreen, toScreen);
+
+	if (ceil(screen)==0 || floor(screen)==0) {
+		bstart.draw();
+		babout.draw();
+		bhelp.draw();
+		bexit.draw();
+	}
+
+	if (1 || ceil(screen)==1 || floor(screen)==1) {
+		glMultMatrixd(getRotationMatrix(camera));
+		buildRubiksCube();
+
+		if (rotationType) {
+			updateRotation();
+		}
 	}
 
 	glutSwapBuffers();
