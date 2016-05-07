@@ -32,9 +32,10 @@ using namespace Eigen;
 #define sp system("pause")
 #define FOR(i,a,b) for(int i=a;i<=b;++i)
 #define FORD(i,a,b) for(int i=a;i>=b;--i)
-#define REP(i,n) FOR(i,0,(int)n-1)
+#define REP(i,n) for(int i=0;i<n;++i)
 #define ll long long
-#define CUBE_SIZE 3
+
+#define CUBE_SIZE 2
 
 int layer = 0;
 int width = 1200, height = 750;
@@ -79,15 +80,12 @@ public :
 };
 
 class button {
-
+	static float xelev;
+	static float yelev;
+	static float xshadowMul;
+	static float yshadowMul;
+	static float clickdelay;
 public :
-
-	const float xelev = 0.07;
-	const float yelev = 0.05;
-	const float xshadowMul = 0.7;
-	const float yshadowMul = 0.5;
-	const float clickdelay = 1000/(CUBE_SIZE*sqrt(CUBE_SIZE));
-
 	bool is3D, isAnimating;
 	float x, y;
 	float xoff, yoff;
@@ -208,6 +206,12 @@ public :
 	
 };
 
+float button::xelev = 0.07;
+float button::yelev = 0.05;
+float button::xshadowMul = 0.7;
+float button::yshadowMul = 0.5;
+float button::clickdelay = max( 10, 1000/(CUBE_SIZE*sqrt(CUBE_SIZE)));
+
 class State {
 
 	/*
@@ -228,6 +232,21 @@ public:
 				REP(j, CUBE_SIZE)
 				faces[k][i][j] = k;
 		}
+	}
+
+	bool isSolved() {
+
+		REP(k, 6) {
+			int color = faces[k][0][0];
+			REP(j, CUBE_SIZE) {
+				REP(i, CUBE_SIZE) {
+					if (faces[k][j][i]!=color)
+						return false;
+				}
+			}
+		}
+		return true;
+
 	}
 
 	void printCube(int type=0) {
@@ -593,6 +612,45 @@ public:
 
 	}
 
+	bool operator<(const State& rhs) const{
+
+		REP(k, 6) {
+			REP(j, CUBE_SIZE) {
+				REP(i, CUBE_SIZE) {
+					if (faces[k][j][i] != rhs.faces[k][j][i]) 
+						return faces[k][j][i] < rhs.faces[k][j][i];
+				}
+			}
+		}
+		return false;
+
+	}
+
+	bool operator>(const State& rhs) const{
+
+		REP(k, 6) {
+			REP(j, 3) {
+				REP(i, 3) {
+					if (faces[k][j][i] != rhs.faces[k][j][i]) 
+						return faces[k][j][i] > rhs.faces[k][j][i];
+				}
+			}
+		}
+		return false;
+	}
+
+	bool operator==(const State& rhs) const {
+
+		REP(k, 6) {
+			REP(j, 3) {
+				REP(i, 3) {
+					if (faces[k][j][i] != rhs.faces[k][j][i])
+						return false;
+				}
+			}
+		}
+		return true;
+	}
 
 	/*
 	0 - Front
@@ -608,6 +666,7 @@ public:
 bool hollow = false;
 bool change = false;
 bool isTransition = false;
+bool isMousePressed = false;
 
 int px = -1, py = -1;
 float xscreen = 0, fromXScreen = 0, toXScreen = 0;
@@ -619,20 +678,29 @@ double transitionSpeed = min(1, pow(10, floor((CUBE_SIZE-3)/10))/1000 );
 
 int rotationType = 0;
 const double PI = 3.1415926535;
-double rorationSpeed = min(90.0, (double)CUBE_SIZE*sqrt(CUBE_SIZE)/50);
+double rorationSpeed = min(90.0, max(0.15, (double)CUBE_SIZE*sqrt(CUBE_SIZE)/50));
 
 double totalRotation = 0;
 Vector3d rotationAxis;
+
 button bstart = button(-3.5, 1, 0.8, 0.3, color(0, 0.8, 0), color(0, 0, 0), "START");
 button babout = button(-3.5, 0.5, 0.8, 0.3, color(1, 0.8, 0), color(0, 0, 0), "ABOUT");
 button bhelp = button(-3.5, 0, 0.8, 0.3, color(0, 0.6, 1), color(0, 0, 0), "HELP");
 button bexit = button(-3.5, -0.5, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "EXIT");
-button bback1 = button( 4.5, -2, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "BACK");
+
+button bback10 = button( 4.5, -2, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "BACK");
+button bhollow = button( 4.5,  2, 0.8, 0.3, color(0.2, 0.2, 0.2), color(1, 1, 1), "HOLLOW");
+button bsolve = button( 4.5, 1.5, 0.8, 0.3, color(1, 0, 0.6), color(0, 0, 0), "SOLVE");
+
+button bback01 = button(-3.5, 3, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "BACK");
+
+button bback0_1 = button(-3.5, -7, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "BACK");
 
 State cube;
 Quaterniond camera = Quaterniond{ AngleAxisd{1, Vector3d{0,0,0}} };
 
 double *matrix = new double[16];
+vector<char> moveList;
 vector<point> rotationQueue;
 color colorList[7] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0.9,0.9,0.9),  color(1,0.4,0), color(0.9,0,0), color(0.2,0.2,0.2) };
 
@@ -652,6 +720,18 @@ void printText(float x, float y, string text, float size, void *font = GLUT_STRO
 
 }
 
+void toggleHollow() {
+
+	if (hollow) {
+		hollow = false;
+		bhollow = button(4.5, 2, 0.8, 0.3, color(0.2, 0.2, 0.2), color(1, 1, 1), "HOLLOW");
+	}
+	else  {
+		hollow = true;
+		bhollow = button(4.5, 2, 0.8, 0.3, color(0.9, 0.9, 0.9), color(0, 0, 0), "SOLID");
+	}
+}
+
 void enableTransition() {
 	isTransition = true;
 }
@@ -667,18 +747,213 @@ void exitProgram() {
 	exit(0);
 }
 
+void BFS(vector<char> &moves) {
+
+	State cur;
+	set<State> visited;
+	queue<State> q;
+	map<State, pair<char, State>> parent;
+
+
+	visited.insert(cube);
+	q.push(cube);
+
+	while (!q.empty()) {
+
+		State s = q.front();
+		State copy = s;
+		q.pop();
+
+		if (s.isSolved()) {
+			cur = s;
+			break;
+		}
+
+		// Clockwise turns
+		s.front_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('q', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.front_anticlock();
+
+		s.back_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('w', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.back_anticlock();
+
+		s.left_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('a', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.left_anticlock();
+
+		s.right_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('s', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.right_anticlock();
+
+		s.up_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('z', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.up_anticlock();
+
+		s.down_clock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('x', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.down_anticlock();
+
+		// Anti-Clockwise turns
+		s.front_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('Q', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.front_clock();
+
+		s.back_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('W', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.back_clock();
+
+		s.left_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('A', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.left_clock();
+
+		s.right_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('S', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.right_clock();
+
+		s.up_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('Z', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.up_clock();
+
+		s.down_anticlock();
+		if (visited.find(s)==visited.end()) {
+			visited.insert(s);
+			parent[s] = make_pair('X', copy);
+			q.push(s);
+			if (s.isSolved()) {
+				cur = s;
+				break;
+			}
+		}
+		s.down_clock();
+
+	}
+
+	while (parent.count(cur)) {
+		pair<char, State> s = parent[cur];
+		moves.push_back(s.first);;
+		cur = s.second;
+	}
+
+	reverse(moves.begin(), moves.end());
+
+}
+
+void solve() {
+	moveList.clear();
+	BFS(moveList);
+}
+
 void animateButtons() {
 
 	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
 		(ceil(yscreen)==0 || floor(yscreen)==0)) {
 		bstart.animate(enableTransition);
-		babout.animate(nothing);
-		bhelp.animate(nothing);
+		babout.animate(enableTransition);
+		bhelp.animate(enableTransition);
 		bexit.animate(exitProgram);
 	}
 	if ((ceil(xscreen)==1 || floor(xscreen)==1) &&
 		(ceil(yscreen)==0 || floor(yscreen)==0)) {
-		bback1.animate(enableTransition);
+		bback10.animate(enableTransition);
+		bhollow.animate(toggleHollow);
+		bsolve.animate(solve);
+	}
+	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
+		(ceil(yscreen)==1 || floor(yscreen)==1)) {
+		bback01.animate(enableTransition);
+	}
+	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
+		(ceil(yscreen)==-1 || floor(yscreen)==-1)) {
+		bback0_1.animate(enableTransition);
 	}
 }
 
@@ -758,17 +1033,17 @@ void keyboard(unsigned char key, int x, int y) {
 	if (xscreen==1 && yscreen==0) {
 		if (rotationType==0) {
 			if (key>='1' && key<='9') {
-				layer = min(CUBE_SIZE/2, key-'1');
+				layer = min((CUBE_SIZE-1)/2, key-'1');
 			}
 			else if (key=='+') {
-				layer = min(CUBE_SIZE/2, layer+1);
+				layer = min((CUBE_SIZE-1)/2, layer+1);
 			}
 			else if (key=='-') {
 				layer = max(0, layer-1);
 			}
 			if (key=='j' || key=='J') {
 				int cacheLayer = layer;
-				FOR(i, 1, 5) {
+				FOR(i, 1, 1) {
 					layer = rand()%(CUBE_SIZE/2);
 					rotationType = 1 + rand()%12;
 					changeState();
@@ -903,48 +1178,98 @@ void keyboard(unsigned char key, int x, int y) {
 
 void mouse(int button, int state, int x, int y) {
 
+	if (isMousePressed==false) {
+		float glx = (x-(float)width/2)*8/width + cameraX;
+		float gly = ((float)height/2-y)*5/height + cameraY;
+
+		printf("Mouse Click at %f, %f\n", glx, gly);
+
+		if (xscreen==0 && yscreen==0) {
+			if (bstart.collision(glx, gly)) {
+				bstart.isAnimating = true;
+				xscreen = 0.5;
+				fromXScreen = 0;
+				toXScreen = 1;
+				yscreen = 0;
+				fromYScreen = 0;
+				toYScreen = 0;
+			}
+			else if (babout.collision(glx, gly)) {
+				babout.isAnimating = true;
+				xscreen = 0;
+				fromXScreen = 0;
+				toXScreen = 0;
+				yscreen = 0.5;
+				fromYScreen = 0;
+				toYScreen = 1;
+			}
+			else if (bhelp.collision(glx, gly)) {
+				bhelp.isAnimating = true;
+				xscreen = 0;
+				fromXScreen = 0;
+				toXScreen = 0;
+				yscreen = -0.5;
+				fromYScreen = 0;
+				toYScreen = -1;
+			}
+			else if (bexit.collision(glx, gly)) {
+				bexit.isAnimating = true;
+			}
+		}
+		if (xscreen==1 && yscreen==0) {
+			if (bback10.collision(glx, gly)) {
+				bback10.isAnimating = true;
+				xscreen = 0.5;
+				fromXScreen = 1;
+				toXScreen = 0;
+				yscreen = 0;
+				fromYScreen = 0;
+				toYScreen = 0;
+			}
+			if (bhollow.collision(glx, gly)) {
+				bhollow.isAnimating = true;
+			}
+			if (bsolve.collision(glx, gly)) {
+				bsolve.isAnimating = true;
+			}
+		}
+		if (xscreen==0 && yscreen==1) {
+			if (bback01.collision(glx, gly)) {
+				bback01.isAnimating = true;
+				xscreen = 0;
+				fromXScreen = 0;
+				toXScreen = 0;
+				yscreen = 0.5;
+				fromYScreen = 1;
+				toYScreen = 0;
+			}
+		}
+		if (xscreen==0 && yscreen==-1) {
+			if (bback0_1.collision(glx, gly)) {
+				bback0_1.isAnimating = true;
+				xscreen = 0;
+				fromXScreen = 0;
+				toXScreen = 0;
+				yscreen = -0.5;
+				fromYScreen = -1;
+				toYScreen = 0;
+			}
+		}
+	}
+
+
 	if (button==GLUT_LEFT_BUTTON && state==GLUT_DOWN) {
 		px = x;
 		py = y;
+		isMousePressed = true;
 	}
 
 	if (button==GLUT_LEFT_BUTTON && state==GLUT_UP) {
 		py = px = -1;
+		isMousePressed = false;
 	}
 
-	float glx = (x-(float)width/2)*8/width + cameraX;
-	float gly = ((float)height/2-y)*5/height + cameraY;
 
-	printf("Mouse Click at %f, %f\n", glx, gly);
-
-	if (xscreen==0 && yscreen==0) {
-		if (bstart.collision(glx, gly)) {
-			bstart.isAnimating = true;
-			xscreen = 0.5;
-			fromXScreen = 0;
-			toXScreen = 1;
-			yscreen = 0;
-			fromYScreen = 0;
-			toYScreen = 0;
-		}
-		else if (babout.collision(glx, gly))
-			babout.isAnimating = true;
-		else if (bhelp.collision(glx, gly))
-			bhelp.isAnimating = true;
-		else if (bexit.collision(glx, gly))
-			bexit.isAnimating = true;
-	}
-	if (xscreen==1 && yscreen==0) {
-		if (bback1.collision(glx, gly)) {
-			bback1.isAnimating = true;
-			xscreen = 0.5;
-			fromXScreen = 1;
-			toXScreen = 0;
-			yscreen = 0;
-			fromYScreen = 0;
-			toYScreen = 0;
-		}
-	}
 
 }
 
@@ -1105,16 +1430,30 @@ void doTransition(float fromX, float toX, float fromY, float toY) {
 
 	if (isTransition) {
 
-		cameraX += transitionSpeed*(toX - fromX)*(8);
-		cameraY += transitionSpeed*(toY - fromY)*(8);
+		if ((ceil(xscreen)==1 || floor(xscreen)==1) &&
+			(ceil(yscreen)==0 || floor(yscreen)==0)) {
+			cameraX += transitionSpeed*(toX - fromX)*(8);
+			cameraY += transitionSpeed*(toY - fromY)*(5);
+			transition_percent += transitionSpeed;
 
-		transition_percent += transitionSpeed;
+			if (transition_percent>=1) {
+				isTransition = false;
+				fromXScreen = xscreen = toXScreen;
+				fromYScreen = yscreen = toYScreen;
+				transition_percent = 0;
+			}
+		}
+		else {
+			cameraX += 0.001*(toX - fromX)*(8);
+			cameraY += 0.001*(toY - fromY)*(5);
+			transition_percent += 0.001;
 
-		if (transition_percent>=1) {
-			isTransition = false;
-			fromXScreen = xscreen = toXScreen;
-			fromYScreen = yscreen = toYScreen;
-			transition_percent = 0;
+			if (transition_percent>=1) {
+				isTransition = false;
+				fromXScreen = xscreen = toXScreen;
+				fromYScreen = yscreen = toYScreen;
+				transition_percent = 0;
+			}
 		}
 	}
 
@@ -1132,11 +1471,58 @@ void displayTitle() {
 
 }
 
+void displayHelp() {
+
+	printText(-3.8, -3.2, "INSTRUCTIONS", 3, GLUT_STROKE_ROMAN, color(0,0.6,1), 3);
+	printText(-3.5, -3.55, "1. KEYS :", 1.5, GLUT_STROKE_ROMAN, color(0.8, 0.8, 0.8), 2.5);
+	printText(-3.2, -3.8, "Q : Front clockwise" , 1, GLUT_STROKE_ROMAN, colorList[0], 1);
+	printText(-3.2, -4.0, "W : Back clockwise"  , 1, GLUT_STROKE_ROMAN, colorList[1], 1);
+	printText(-3.2, -4.2, "A : Left clockwise"  , 1, GLUT_STROKE_ROMAN, colorList[2], 1);
+	printText(-3.2, -4.4, "S : Right clockwise" , 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.2, -4.6, "Z : Top clockwise"   , 1, GLUT_STROKE_ROMAN, colorList[4], 1);
+	printText(-3.2, -4.8, "X : Bottom clockwise", 1, GLUT_STROKE_ROMAN, colorList[5], 1);
+	printText(-3.2, -5.0, "J : Random Rotations", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.2, -5.2, "1-9 : Choosee the corresponding layer", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.2, -5.4, "-/+ : Increment/Decrement the layer", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.2, -5.6, "SHIFT : Anti-clockwise Turns", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+
+	printText(-3.5, -5.95, "2. MOUSE", 1.5, GLUT_STROKE_ROMAN, color(0.8, 0.8, 0.8), 2.5);
+	printText(-3.2, -6.2, "Drag Vertically : Rotate along X-Axis"  , 1, GLUT_STROKE_ROMAN, colorList[5], 1);
+	printText(-3.2, -6.4, "Drag Horizontally : Rotate along Y-Axis", 1, GLUT_STROKE_ROMAN, colorList[0], 1);
+	printText(-3.2, -6.6, "Scroll Up/Donw : Rotate along Z-Axis"   , 1, GLUT_STROKE_ROMAN, colorList[1], 1);
+
+}
+
+void displayAbout() {
+
+	printText(-3.8, 6.8, "ABOUT", 3, GLUT_STROKE_ROMAN, color(1, 0.8, 0), 3);
+	printText(-3.5, 6.5, "RUBIKS is a program designed using OpenGL to help Rubiks cube enthusiasts play ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 6.3, "around with their favourite puzzle. It is a highly sophisticated program that ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 6.1, "allows the user to smoothly move and rotate a cube. This program can handle a ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 5.9, "50x50x50 with ease. The size of the cube is only limited by the memory and ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 5.7, "computation power available. With its responsive UI, 3D buttons and smooth ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 5.5, "transitions, it makes it easy for any user to interact with the program. I hope ", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+	printText(-3.5, 5.3, "you like this program and have fun with it.", 1, GLUT_STROKE_ROMAN, colorList[3], 1);
+
+	printText(-3.8, 4.0, "DEVELOPED BY", 1.2, GLUT_STROKE_MONO_ROMAN, colorList[2], 2);
+	printText(-3.8, 3.7, "  AKSHAY L ARADHYA", 1.2, GLUT_STROKE_MONO_ROMAN, colorList[4], 2);
+
+}
+
+void displaySolution() {
+
+	REP(i, moveList.size()) {
+		string s = "";
+		s += moveList[i];
+		printf("%s\n", s.c_str());
+		printText(11, 2-i*0.3, s, 1.5, GLUT_STROKE_ROMAN, colorList[3], 2);
+	}
+
+}
+
 void display() {
 
-	
 	glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
-
 	glLoadIdentity();
 	animateButtons();
 	doTransition(fromXScreen, toXScreen, fromYScreen, toYScreen);
@@ -1150,10 +1536,25 @@ void display() {
 		displayTitle();
 	}
 
+	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
+		(ceil(yscreen)==1 || floor(yscreen)==1)) {
+		bback01.draw();
+		displayAbout();
+	}
+
+	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
+		(ceil(yscreen)==-1 || floor(yscreen)==-1)) {
+		bback0_1.draw();
+		displayHelp();
+	}
+
 	if ((ceil(xscreen)==1 || floor(xscreen)==1) &&
 		(ceil(yscreen)==0 || floor(yscreen)==0)) {
 
-		bback1.draw();
+		bhollow.draw();
+		bback10.draw();
+		bsolve.draw();
+		displaySolution();
 		glTranslatef(8, 0, 0);
 		glMultMatrixd(getRotationMatrix(camera));
 		glTranslatef(-8, 0, 0);
@@ -1188,7 +1589,6 @@ void init() {
 }
 
 int main(int argc, char *argv[]) {
-
 
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DOUBLE|GLUT_DEPTH);
