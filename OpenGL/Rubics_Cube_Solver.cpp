@@ -34,7 +34,7 @@ using namespace Eigen;
 #define FORD(i,a,b) for(int i=a;i>=b;--i)
 #define REP(i,n) FOR(i,0,(int)n-1)
 #define ll long long
-#define CUBE_SIZE 10
+#define CUBE_SIZE 3
 
 int layer = 0;
 int width = 1200, height = 750;
@@ -86,7 +86,7 @@ public :
 	const float yelev = 0.05;
 	const float xshadowMul = 0.7;
 	const float yshadowMul = 0.5;
-	const float clickdelay = 200;
+	const float clickdelay = 1000/(CUBE_SIZE*sqrt(CUBE_SIZE));
 
 	bool is3D, isAnimating;
 	float x, y;
@@ -189,14 +189,16 @@ public :
 		return false;
 	}
 
-	void animate() {
+	void animate(void actionEvent()) {
 
 		if (isAnimating) {
 			xoff += xelev/clickdelay;
 			yoff += yelev/clickdelay;
 
-			if (xoff+x>=x+xelev)
+			if (xoff+x>=x+xelev) {
 				isAnimating = false;
+				actionEvent();
+			}
 		}
 		else {
 			xoff = max(0, xoff-xelev/clickdelay);
@@ -608,19 +610,24 @@ bool change = false;
 bool isTransition = false;
 
 int px = -1, py = -1;
-float screen = 0, fromScreen=0, toScreen = 0;
+float xscreen = 0, fromXScreen = 0, toXScreen = 0;
+float yscreen = 0, fromYScreen = 0, toYScreen = 0;
 float transition_percent = 0;
-float cameraX = -3, cameraY = 0, cameraZ = 0;
+float cameraX = -0, cameraY = 0, cameraZ = 0;
+
+double transitionSpeed = min(1, pow(10, floor((CUBE_SIZE-3)/10))/1000 );
 
 int rotationType = 0;
 const double PI = 3.1415926535;
-double rorationSpeed = min(90.0, (double)CUBE_SIZE*CUBE_SIZE/150);
+double rorationSpeed = min(90.0, (double)CUBE_SIZE*sqrt(CUBE_SIZE)/50);
+
 double totalRotation = 0;
 Vector3d rotationAxis;
-button bstart = button(-6.5, 2, 0.8, 0.3, color(0, 0.8, 0), color(0, 0, 0), "START");
-button babout = button(-6.5, 1.5, 0.8, 0.3, color(1, 0.8, 0), color(0, 0, 0), "ABOUT");
-button bhelp = button(-6.5, 1, 0.8, 0.3, color(0, 0.6, 1), color(0, 0, 0), "HELP");
-button bexit = button(-6.5, 0.5, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "EXIT");
+button bstart = button(-3.5, 1, 0.8, 0.3, color(0, 0.8, 0), color(0, 0, 0), "START");
+button babout = button(-3.5, 0.5, 0.8, 0.3, color(1, 0.8, 0), color(0, 0, 0), "ABOUT");
+button bhelp = button(-3.5, 0, 0.8, 0.3, color(0, 0.6, 1), color(0, 0, 0), "HELP");
+button bexit = button(-3.5, -0.5, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "EXIT");
+button bback1 = button( 4.5, -2, 0.8, 0.3, color(1, 0.1, 0.1), color(0, 0, 0), "BACK");
 
 State cube;
 Quaterniond camera = Quaterniond{ AngleAxisd{1, Vector3d{0,0,0}} };
@@ -631,15 +638,48 @@ color colorList[7] = { color(0.3,0.8,0), color(0,0.5,1), color(1,0.8,0), color(0
 
 Quaterniond cubesRotation[CUBE_SIZE][CUBE_SIZE][CUBE_SIZE];
 
+void printText(float x, float y, string text, float size, void *font = GLUT_STROKE_ROMAN, color fg = color(1,1,1), float stroke = 2) {
+
+	glPushMatrix();
+	glTranslatef(x, y, 0);
+	glScalef(size/800.0, size/800.0, 0);
+	glLineWidth(stroke);
+	glColor3fv(fg.getArray());
+
+	REP(i, text.size())
+		glutStrokeCharacter(font, text[i]);
+	glPopMatrix();
+
+}
+
+void enableTransition() {
+	isTransition = true;
+}
+
+void nothing() {
+
+}
+
+void exitProgram() {
+
+	printf("Exiting");
+	Sleep(1000);
+	exit(0);
+}
+
 void animateButtons() {
 
-	if (screen==0) {
-		bstart.animate();
-		babout.animate();
-		bhelp.animate();
-		bexit.animate();
+	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
+		(ceil(yscreen)==0 || floor(yscreen)==0)) {
+		bstart.animate(enableTransition);
+		babout.animate(nothing);
+		bhelp.animate(nothing);
+		bexit.animate(exitProgram);
 	}
-
+	if ((ceil(xscreen)==1 || floor(xscreen)==1) &&
+		(ceil(yscreen)==0 || floor(yscreen)==0)) {
+		bback1.animate(enableTransition);
+	}
 }
 
 void changeState() {
@@ -715,7 +755,7 @@ double* getRotationMatrix(Quaterniond &q) {
 void keyboard(unsigned char key, int x, int y) {
 
 	
-	if (screen==1) {
+	if (xscreen==1 && yscreen==0) {
 		if (rotationType==0) {
 			if (key>='1' && key<='9') {
 				layer = min(CUBE_SIZE/2, key-'1');
@@ -877,13 +917,15 @@ void mouse(int button, int state, int x, int y) {
 
 	printf("Mouse Click at %f, %f\n", glx, gly);
 
-	if (screen==0) {
+	if (xscreen==0 && yscreen==0) {
 		if (bstart.collision(glx, gly)) {
 			bstart.isAnimating = true;
-			screen = 0.5;
-			fromScreen = 0;
-			toScreen = 1;
-			isTransition = true;
+			xscreen = 0.5;
+			fromXScreen = 0;
+			toXScreen = 1;
+			yscreen = 0;
+			fromYScreen = 0;
+			toYScreen = 0;
 		}
 		else if (babout.collision(glx, gly))
 			babout.isAnimating = true;
@@ -892,24 +934,39 @@ void mouse(int button, int state, int x, int y) {
 		else if (bexit.collision(glx, gly))
 			bexit.isAnimating = true;
 	}
+	if (xscreen==1 && yscreen==0) {
+		if (bback1.collision(glx, gly)) {
+			bback1.isAnimating = true;
+			xscreen = 0.5;
+			fromXScreen = 1;
+			toXScreen = 0;
+			yscreen = 0;
+			fromYScreen = 0;
+			toYScreen = 0;
+		}
+	}
 
 }
 
 void mouseWheel(int button, int dir, int x, int y){
 
-	double factor = 0.05;
-	Quaterniond qz = Quaterniond{ AngleAxisd{ dir*factor, Vector3d{ 0, 0, 1 } } };
-	camera = qz*camera;
+	if (xscreen==1 && yscreen==0) {
+		double factor = 0.05;
+		Quaterniond qz = Quaterniond{ AngleAxisd{ dir*factor, Vector3d{ 0, 0, 1 } } };
+		camera = qz*camera;
+	}
 
 }
 
 void motion(int x, int y) {
 
-	if (px!=-1 && py!=-1) {
-		double factor = 0.005;
-		Quaterniond qx = Quaterniond{ AngleAxisd{ (y-py)*factor, Vector3d{ 1, 0, 0 } } };
-		Quaterniond qy = Quaterniond{ AngleAxisd{ (x-px)*factor, Vector3d{ 0, 1, 0 } } };
-		camera = qx*qy*camera;
+	if (xscreen==1 && yscreen==0) {
+		if (px!=-1 && py!=-1) {
+			double factor = 0.005;
+			Quaterniond qx = Quaterniond{ AngleAxisd{ (y-py)*factor, Vector3d{ 1, 0, 0 } } };
+			Quaterniond qy = Quaterniond{ AngleAxisd{ (x-px)*factor, Vector3d{ 0, 1, 0 } } };
+			camera = qx*qy*camera;
+		}
 	}
 	px = x;
 	py = y;
@@ -1003,17 +1060,18 @@ void buildRubiksCube() {
 				int cz = (int)round((-z+big_szie/2)/(small_size+intercube_spacing));
 
 				glPushMatrix();
+				glTranslatef(8, 0, 0);
 				glMultMatrixd(getRotationMatrix(cubesRotation[cz][cy][cx]));
-
+				glTranslatef(-8, 0, 0);
 				float v[8][3] = { 
-					{ x, y, z },
-					{ x+small_size, y, z },
-					{ x+small_size, y-small_size, z },
-					{ x, y-small_size, z },
-					{ x, y, z-small_size },
-					{ x+small_size, y, z-small_size },
-					{ x+small_size, y-small_size, z-small_size },
-					{ x, y-small_size, z-small_size } 
+					{ x+8, y, z },
+					{ x+small_size+8, y, z },
+					{ x+small_size+8, y-small_size, z },
+					{ x+8, y-small_size, z },
+					{ x+8, y, z-small_size },
+					{ x+small_size+8, y, z-small_size },
+					{ x+small_size+8, y-small_size, z-small_size },
+					{ x+8, y-small_size, z-small_size } 
 				};
 
 				drawCube(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], cx, cy, cz);
@@ -1043,21 +1101,35 @@ void updateRotation() {
 
 }
 
-void doTransition(int from, int to) {
+void doTransition(float fromX, float toX, float fromY, float toY) {
 
 	if (isTransition) {
-		if (from==0 && to==1) {
-			cameraX = (100-transition_percent)/100*(-3);
-			transition_percent += 0.1;
-			if (transition_percent>=100) {
-				isTransition = false;
-				fromScreen = screen = toScreen;
-				transition_percent = 0;
-			}
+
+		cameraX += transitionSpeed*(toX - fromX)*(8);
+		cameraY += transitionSpeed*(toY - fromY)*(8);
+
+		transition_percent += transitionSpeed;
+
+		if (transition_percent>=1) {
+			isTransition = false;
+			fromXScreen = xscreen = toXScreen;
+			fromYScreen = yscreen = toYScreen;
+			transition_percent = 0;
 		}
 	}
 
 	glTranslatef(-cameraX, -cameraY, -cameraZ);
+}
+
+void displayTitle() {
+
+	printText(-2, 1.5, "R", 5, GLUT_STROKE_MONO_ROMAN, colorList[5], 4 );
+	printText(-1.4, 1.5, "U", 5, GLUT_STROKE_MONO_ROMAN, colorList[4], 4);
+	printText(-0.8, 1.5, "B", 5, GLUT_STROKE_MONO_ROMAN, colorList[2], 4);
+	printText(-0.2, 1.5, "I", 5, GLUT_STROKE_MONO_ROMAN, colorList[0], 4);
+	printText( 0.4, 1.5, "K", 5, GLUT_STROKE_MONO_ROMAN, colorList[1], 4);
+	printText( 1, 1.5, "S", 5, GLUT_STROKE_MONO_ROMAN, colorList[3], 4);
+
 }
 
 void display() {
@@ -1067,18 +1139,24 @@ void display() {
 
 	glLoadIdentity();
 	animateButtons();
+	doTransition(fromXScreen, toXScreen, fromYScreen, toYScreen);
 
-	doTransition(fromScreen, toScreen);
-
-	if (ceil(screen)==0 || floor(screen)==0) {
+	if ( (ceil(xscreen)==0 || floor(xscreen)==0) &&
+		 (ceil(yscreen)==0 || floor(yscreen)==0) ){
 		bstart.draw();
 		babout.draw();
 		bhelp.draw();
 		bexit.draw();
+		displayTitle();
 	}
 
-	if (1 || ceil(screen)==1 || floor(screen)==1) {
+	if ((ceil(xscreen)==1 || floor(xscreen)==1) &&
+		(ceil(yscreen)==0 || floor(yscreen)==0)) {
+
+		bback1.draw();
+		glTranslatef(8, 0, 0);
 		glMultMatrixd(getRotationMatrix(camera));
+		glTranslatef(-8, 0, 0);
 		buildRubiksCube();
 
 		if (rotationType) {
