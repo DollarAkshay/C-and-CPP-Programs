@@ -1,0 +1,98 @@
+#if 0
+/*~~~~~~~~~~~~~~~~~~*
+*                  *
+* $Dollar Akshay$  *
+*                  *
+*~~~~~~~~~~~~~~~~~~*/
+
+//
+
+#include <math.h>
+#include <time.h>
+#include <ctype.h>
+#include <stdio.h>
+#include <assert.h>
+#include <stdlib.h>
+#include <string.h>
+#include <map>
+#include <set>
+#include <deque>
+#include <queue>
+#include <stack>
+#include <bitset>
+#include <string>
+#include <vector>
+#include <iostream>
+#include <algorithm>
+#include <functional>
+
+using namespace std;
+
+#define sp system("pause")
+#define FOR(i,a,b) for(int i=a;i<=b;++i)
+#define FORD(i,a,b) for(int i=a;i>=b;--i)
+#define REP(i,n) FOR(i,0,(int)n-1)
+#define pb(x) push_back(x)
+#define mp(a,b) make_pair(a,b)
+#define MS0(x) memset(x,0,sizeof(x))
+#define MS1(x) memset(x,1,sizeof(x))
+#define SORT(a,n) sort(begin(a),begin(a)+n)
+#define REV(a,n) reverse(begin(a),begin(a)+n)
+#define ll long long
+#define pii pair<int,int>
+#define MOD 1000000007
+
+class State {
+
+public:
+	int faces[6][3][3];
+
+	State() {
+		REP(k, 6) {
+			REP(i, 3)
+				REP(j, 3)
+				faces[k][i][j] = k;
+		}
+	}
+
+	bool operator<(const State& rhs) const {
+
+		REP(k, 6) {
+			REP(j, 3) {
+				REP(i, 3) {
+					if (faces[k][j][i] != rhs.faces[k][j][i])
+						return faces[k][j][i] < rhs.faces[k][j][i];
+				}
+			}
+		}
+		return false;
+
+	}
+};
+
+int main() {
+
+	map<State, pair<char, State>> parent;
+
+	State s, copy;
+
+	copy.faces[0][0][0] = 100;
+
+	parent[s] = make_pair('a', copy);
+
+	pair<char, State> temp = parent[s];
+
+	printf("Temp.first = %c\n", temp.first);
+	printf("Temp.second = ");
+	REP(i, 6)
+		printf("%d, ", temp.second.faces[i]);
+	printf("\n");
+	sp;
+	return 0;
+
+
+
+}
+
+//  
+#endif // 0
