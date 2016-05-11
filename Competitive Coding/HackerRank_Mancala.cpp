@@ -54,6 +54,11 @@ public:
 		pos = -1;
 		value = 0;
 	}
+	GameMove(int ivalue) {
+		player = -1;
+		pos = -1;
+		value = ivalue;
+	}
 	GameMove(int iplayer, int ipos) {
 		player = iplayer;
 		pos = ipos;
@@ -64,6 +69,15 @@ public:
 		pos = ipos;
 		value = ivalue;
 	}
+
+	inline bool operator > (const GameMove &rhs) const {
+		return value > rhs.value;
+	}
+
+	inline bool operator < (const GameMove &rhs) const {
+		return value < rhs.value;
+	}
+
 };
 
 class GameState {
@@ -196,52 +210,136 @@ public:
 
 	}
 
+	bool isGameOver() {
+
+		bool empty1 = true, empty2 = true;
+
+		//Check Player 1
+		FOR(i, 1, SIZE) {
+			if (holes[0][i]>0) {
+				empty1 = false;
+				break;
+			}
+		}
+		if (empty1)
+			return true;
+
+		//Check Player 2
+		FOR(i, 1, SIZE) {
+			if (holes[1][i]>0) {
+				empty2 = false;
+				break;
+			}
+		}
+		if (empty2)
+			return true;
+
+		return false;
+	}
+
 };
+
+int player;
+int max_depth = 18;
+
+int evaluate(GameState &game) {
+
+	int score = game.holes[player][0] - game.holes[!player][0];
+	
+	if (game.isGameOver()) {
+		FOR(i, 1, SIZE) {
+			score -= game.holes[!player][i];
+			score += game.holes[player][i];
+		}
+	}
+	if (score<=-48) {
+		DB("WTF\n");
+	}
+
+	return score;
+
+}
+
+
+GameMove minimax(GameState game, int depth, int alpha, int beta, bool maximizingPlayer) {
+
+	if (depth == 0 || game.isGameOver()) {
+		return GameMove(evaluate(game));
+	}
+
+
+
+	if (maximizingPlayer) {
+		GameMove bestMove = GameMove(INT32_MIN);
+
+		FOR(i, 1, SIZE) {
+			if (game.holes[player][i]>0) {
+				GameState cur = game;
+				GameMove move = GameMove(player, i);
+				bool canPlayAgain = cur.makeMove(move);
+				GameMove returnedMove = minimax(cur, depth-1, alpha, beta, canPlayAgain?maximizingPlayer:!maximizingPlayer);
+				if (returnedMove > bestMove) {
+					bestMove = GameMove(player, i, returnedMove.value);
+				}
+				alpha = max(alpha, bestMove.value);
+				if (beta<=alpha) {
+					break;
+				}
+			}
+		}
+
+		return bestMove;
+	}
+	else {
+		GameMove bestMove = GameMove(INT32_MAX);
+
+		FOR(i, 1, SIZE) {
+			if (game.holes[!player][i]>0) {
+				GameState cur = game;
+				GameMove move = GameMove(!player, i);
+				bool canPlayAgain = cur.makeMove(move);
+				GameMove returnedMove = minimax(cur, depth-1, alpha, beta, canPlayAgain?maximizingPlayer:!maximizingPlayer);
+				if (returnedMove < bestMove) {
+					bestMove = GameMove(!player, i, returnedMove.value);
+				}
+				beta = min(beta, bestMove.value);
+				if (beta<=alpha) {
+					break;
+				}
+			}
+		}
+
+		return bestMove;
+	}
+		
+
+}
+
 
 int main() {
 
 	srand(time(NULL));
 
-	GameState original;
-	int player;
+	GameState game;
 
 	scanf("%d", &player);
 	player--;
 
-	scanf("%d", &original.holes[0][0]);
+	scanf("%d", &game.holes[0][0]);
 	FORD(i, SIZE, 1)
-		scanf("%d", &original.holes[0][i]);
+		scanf("%d", &game.holes[0][i]);
 
-	scanf("%d", &original.holes[1][0]);
+	scanf("%d", &game.holes[1][0]);
 	FORD(i, SIZE, 1)
-		scanf("%d", &original.holes[1][i]);
+		scanf("%d", &game.holes[1][i]);
 
-	// Choosing a Random Move
-	int pos = -1;
+	GameMove bestMove = minimax(game, max_depth, INT32_MIN, INT32_MAX, true);
 
-	if (pos==-1) {
-		FOR(i, 1, SIZE) {
-			if (original.holes[player][i] == i) {
-				pos = i;
-			}
-		}
-	}
+	DB("BEST MOVE : \n");
+	DB("pos = %d\n", bestMove.pos);
+	DB("value = %d\n", bestMove.value);
 
-	if (pos==-1) {
-		vector<int> availablePos;
-		FOR(i, 1, SIZE) {
-			if (original.holes[player][i]>0)
-				availablePos.push_back(i);
-		}
-		pos = availablePos[rand()%availablePos.size()];
-	}
-
-	GameMove move = GameMove(player, pos);
-	printf("%d\n", SIZE+1-pos);
-	DB("Pos = %d\n", pos);
-
-	original.makeMove(move);
-	original.displayBoard();
+	printf("%d\n", SIZE+1-bestMove.pos);
 
 	sp;
 	return 0;
