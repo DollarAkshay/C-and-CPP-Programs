@@ -35,7 +35,7 @@ using namespace Eigen;
 #define REP(i,n) for(int i=0;i<n;++i)
 #define ll long long
 
-#define CUBE_SIZE 2
+#define CUBE_SIZE 50
 
 int layer = 0;
 int width = 1200, height = 750;
@@ -90,7 +90,8 @@ public :
 	float x, y;
 	float xoff, yoff;
 	float w, h;
-	color bg, fg;
+	color bg, fg
+		;
 	color yshadow, xshadow;
 	string text;
 
@@ -673,6 +674,7 @@ float xscreen = 0, fromXScreen = 0, toXScreen = 0;
 float yscreen = 0, fromYScreen = 0, toYScreen = 0;
 float transition_percent = 0;
 float cameraX = -0, cameraY = 0, cameraZ = 0;
+float viewportX = 8, viewportY = 5;
 
 double transitionSpeed = min(1, pow(10, floor((CUBE_SIZE-3)/10))/1000 );
 
@@ -945,7 +947,8 @@ void animateButtons() {
 		(ceil(yscreen)==0 || floor(yscreen)==0)) {
 		bback10.animate(enableTransition);
 		bhollow.animate(toggleHollow);
-		bsolve.animate(solve);
+		if (CUBE_SIZE== 2 || CUBE_SIZE==3)
+			bsolve.animate(solve);
 	}
 	if ((ceil(xscreen)==0 || floor(xscreen)==0) &&
 		(ceil(yscreen)==1 || floor(yscreen)==1)) {
@@ -1179,8 +1182,8 @@ void keyboard(unsigned char key, int x, int y) {
 void mouse(int button, int state, int x, int y) {
 
 	if (isMousePressed==false) {
-		float glx = (x-(float)width/2)*8/width + cameraX;
-		float gly = ((float)height/2-y)*5/height + cameraY;
+		float glx = (x-(float)width/2)*viewportX/width + cameraX;
+		float gly = ((float)height/2-y)*viewportY/height + cameraY;
 
 		printf("Mouse Click at %f, %f\n", glx, gly);
 
@@ -1229,7 +1232,7 @@ void mouse(int button, int state, int x, int y) {
 			if (bhollow.collision(glx, gly)) {
 				bhollow.isAnimating = true;
 			}
-			if (bsolve.collision(glx, gly)) {
+			if (bsolve.collision(glx, gly) && (CUBE_SIZE== 2 || CUBE_SIZE==3)) {
 				bsolve.isAnimating = true;
 			}
 		}
@@ -1305,7 +1308,7 @@ void reshape(int w, int h) {
 	glViewport(0, 0, w, h);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	glOrtho(-4*widthScale, 4*widthScale, -2.5*heightScale, 2.5*heightScale, -5, 5);
+	glOrtho(-viewportX/2*widthScale, viewportX/2*widthScale, -viewportY/2*heightScale, viewportY/2*heightScale, -5, 5);
 	glMatrixMode(GL_MODELVIEW);
 }
 
@@ -1514,7 +1517,6 @@ void displaySolution() {
 	REP(i, moveList.size()) {
 		string s = "";
 		s += moveList[i];
-		printf("%s\n", s.c_str());
 		printText(11, 2-i*0.3, s, 1.5, GLUT_STROKE_ROMAN, colorList[3], 2);
 	}
 
@@ -1553,7 +1555,8 @@ void display() {
 
 		bhollow.draw();
 		bback10.draw();
-		bsolve.draw();
+		if(CUBE_SIZE==2 || CUBE_SIZE==3)
+			bsolve.draw();
 		displaySolution();
 		glTranslatef(8, 0, 0);
 		glMultMatrixd(getRotationMatrix(camera));
@@ -1572,6 +1575,9 @@ void display() {
 
 void init() {
 
+
+	if (CUBE_SIZE>50)
+		hollow = true;
 	glutDisplayFunc(display);
 	glutMouseFunc(mouse);
 	glutKeyboardFunc(keyboard);
