@@ -35,7 +35,7 @@ using namespace Eigen;
 #define REP(i,n) for(int i=0;i<n;++i)
 #define ll long long
 
-#define CUBE_SIZE 50
+#define CUBE_SIZE 2
 
 int layer = 0;
 int width = 1200, height = 750;
