@@ -241,6 +241,9 @@ public:
 
 int player;
 int max_depth = 18;
+int nodesEvaluated;
+
+
 
 int evaluate(GameState &game) {
 
@@ -260,13 +263,11 @@ int evaluate(GameState &game) {
 
 }
 
-
 GameMove minimax(GameState game, int depth, int alpha, int beta, bool maximizingPlayer) {
 
 	if (depth == 0 || game.isGameOver()) {
 		return GameMove(evaluate(game));
 	}
-
 
 
 	if (maximizingPlayer) {
@@ -314,7 +315,6 @@ GameMove minimax(GameState game, int depth, int alpha, int beta, bool maximizing
 		
 
 }
-
 
 int main() {
 
