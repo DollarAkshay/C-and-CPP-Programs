@@ -7,30 +7,48 @@ using namespace std;
 
 float curColor[3] = { 0, 1, 0 };
 float weatherColor[3] = { 0, 1, 0 };
+float perc = 1;
 
 int leafCount = 7;
 float leafy[100] = { 0, -100, 100, 200, 124, -212, -300 };
 float leafx[100] = {-300, 20, 154, -200, 358, -52, 350 };
-float leafsize[100] = { 0.45, 0.50, 0.55, 0.6, 0.7, 0.8, 0.7};
+float leafsize[100] = { 0.45, 0.50, 0.55, 0.6, 0.7, 0.75, 0.8};
 float leafangle[100] = { 130, 25, 50, 90, 251, 158, 0 };
 float leafrotatespeed[100] = { 0.15, 0.2, 0.15, 0.1, 0.05, 0.07, 0.15 };
 
 void spring() {
 
+	perc = 0;
+	weatherColor[0] = 0.1;
+	weatherColor[1] = 0.8;
+	weatherColor[2] = 0;
+
 }
 
 void summer() {
 
+	perc = 0;
+	weatherColor[0] = 0.9;
+	weatherColor[1] = 0.8;
+	weatherColor[2] = 0;
 
 }
 
 void winter(){
 
+	perc = 0;
+	weatherColor[0] = 0.2;
+	weatherColor[1] = 0.6;
+	weatherColor[2] = 0.8;
 
 }
 
 void fall() {
 
+	perc = 0;
+	weatherColor[0] = 0.9;
+	weatherColor[1] = 0.2;
+	weatherColor[2] = 0;
 
 }
 
@@ -50,8 +68,11 @@ void leaf(int x, int y, float size, float angle) {
 	glVertex2f(+ 4, - 0);
 	glEnd();
 
-	glColor3f(curColor[0], curColor[1], curColor[2]);
+	
 	// Leaf
+	glColor3f(curColor[0]*(100-(rand()%20))/100.0, 
+			  curColor[1]*(100-(rand()%20))/100.0,
+			  curColor[2]*(100-(rand()%20))/100.0);
 	glBegin(GL_POLYGON);
 	glVertex2f(-  0, +  0);
 	glVertex2f(- 65, - 10);
@@ -78,8 +99,46 @@ void leaf(int x, int y, float size, float angle) {
 	glVertex2f(+  0, +  0);
 	glEnd();
 
-	
-	
+	//Veins
+	glColor3f(curColor[0]*0.2, curColor[1]*0.2, curColor[2]*0.2);
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(+0, +  0);
+	glVertex2f(+3, + 50);
+	glVertex2f(-2, +100);
+	glVertex2f(+0, +200);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(+  3, + 50);
+	glVertex2f(+ 20, + 30);
+	glVertex2f(+120, + 75);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(+2.5, +30);
+	glVertex2f(-20, +20);
+	glVertex2f(-120, +75);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(-2, +100);
+	glVertex2f(+20, +120);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(-2, +100);
+	glVertex2f(-20, +115);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f(-1.5, + 80);
+	glVertex2f(-15, +90);
+	glEnd();
+
+	glBegin(GL_LINE_STRIP);
+	glVertex2f( 0, + 65);
+	glVertex2f(+22,+ 75);
+	glEnd();
 
 }
 
@@ -103,7 +162,9 @@ void display(){
 	}
 
 	for (int i = 0; i<3; i++)
-		curColor[i] = (weatherColor[i]+curColor[i])/2;
+		curColor[i] = perc*weatherColor[i] + (1-perc)*curColor[i];
+
+	perc += 0.00001;
 
 	glFlush();
 	Sleep(1);
