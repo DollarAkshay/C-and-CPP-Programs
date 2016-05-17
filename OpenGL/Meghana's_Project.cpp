@@ -6,14 +6,15 @@
 using namespace std;
 
 float curColor[3] = { 0, 1, 0 };
+
 float weatherColor[3] = { 0, 1, 0 };
 float perc = 1;
 
-int leafCount = 7;
+int leafCount = 1;
 float leafy[100] = { 0, -100, 100, 200, 124, -212, -300 };
-float leafx[100] = {-300, 20, 154, -200, 358, -52, 350 };
-float leafsize[100] = { 0.45, 0.50, 0.55, 0.6, 0.7, 0.75, 0.8};
-float leafangle[100] = { 130, 25, 50, 90, 251, 158, 0 };
+float leafx[100] = { 0, 20, 154, -200, 358, -52, 350 };
+float leafsize[100] = { 1, 0.50, 0.55, 0.6, 0.7, 0.75, 0.8};
+float leafangle[100] = { 0, 25, 50, 90, 251, 158, 0 };
 float leafrotatespeed[100] = { 0.15, -0.2, 0.15, 0.1, -0.05, -0.07, 0.15 };
 
 void spring() {
@@ -147,27 +148,44 @@ void display(){
 	glClear(GL_COLOR_BUFFER_BIT);
 	glClearColor(0, 0, 0, 0);
 
+	glLoadIdentity();
+	glColor3f(0, 0, 1);
+	glBegin(GL_LINE_STRIP);
+	glVertex2d(0, 300);
+	glVertex2d(0, -300);
+	glEnd();
+
+	glColor3f(1, 0, 0);
+	glBegin(GL_LINE_STRIP);
+	glVertex2d( 400, 0);
+	glVertex2d(-400, 0);
+	glEnd();
+
 	glColor3f(0, 1, 0);
 
 	for (int i = 0; i<leafCount; i++) {
+
 		leaf(leafx[i], leafy[i], leafsize[i], leafangle[i]);
 
 		leafy[i] -= 1*leafsize[i];
+
 		leafangle[i] += leafrotatespeed[i];
 
-		if (leafy[i]< -300-200*leafsize[i]) {
+		if (leafy[i] < -300-200*leafsize[i]) {
 			leafy[i] = 400;
-			leafx[i] = rand()%701 - 350;
+			leafx[i] = rand()%701 - 350;		
 		}
 	}
 
-	for (int i = 0; i<3; i++)
+	for (int i = 0; i<3; i++) {
 		curColor[i] = perc*weatherColor[i] + (1-perc)*curColor[i];
+	}
 
-	perc += 0.00001;
+	if(perc < 1)
+		perc += 0.00001;
 
 	glFlush();
-	Sleep(1);
+	Sleep(1000);
 	glutPostRedisplay();
 }
 
@@ -207,7 +225,7 @@ void main(int argc, char *argv[]){
 	gluOrtho2D(-400, 400, -300, 300);
 	glMatrixMode(GL_MODELVIEW);
 
-	int id = glutCreateMenu(menu);
+	glutCreateMenu(menu);
 	glutAddMenuEntry("spring", 1);
 	glutAddMenuEntry("summer", 2);
 	glutAddMenuEntry("winter", 3);
