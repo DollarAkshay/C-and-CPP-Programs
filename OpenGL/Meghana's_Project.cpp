@@ -14,7 +14,7 @@ float leafy[100] = { 0, -100, 100, 200, 124, -212, -300 };
 float leafx[100] = {-300, 20, 154, -200, 358, -52, 350 };
 float leafsize[100] = { 0.45, 0.50, 0.55, 0.6, 0.7, 0.75, 0.8};
 float leafangle[100] = { 130, 25, 50, 90, 251, 158, 0 };
-float leafrotatespeed[100] = { 0.15, 0.2, 0.15, 0.1, 0.05, 0.07, 0.15 };
+float leafrotatespeed[100] = { 0.15, -0.2, 0.15, 0.1, -0.05, -0.07, 0.15 };
 
 void spring() {
 
@@ -194,7 +194,6 @@ void menu(int op) {
 	}
 
 }
-
 
 void main(int argc, char *argv[]){
 
