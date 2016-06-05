@@ -169,7 +169,7 @@ void display(){
 	}
 
 	if(perc < 1)
-		perc += 0.00001;
+		perc += 0.001;
 
 	glFlush();
 	Sleep(1);
