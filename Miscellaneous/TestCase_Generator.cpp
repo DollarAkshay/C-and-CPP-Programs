@@ -1,5 +1,4 @@
 
-
 /*~~~~~~~~~~~~~~~~~~*
 *                  *
 * $Dollar Akshay$  *
@@ -125,13 +124,13 @@ string generatenumberstring(int len) {
 
 int main() {
 
-	ll int t = 100;
+	ll int t = 10;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		string s = generatenumberstring(2000);
-		fprintf(fp, "%s\n", s.c_str());
-
+		int n = 1000000;
+		fprintf(fp, "%lld\n", n);
+		randomArray(0, 1000000000, n);
 	}
 
 	printf("\nDONE :)\n\n");
@@ -142,3 +141,5 @@ int main() {
 }
 
 
+
+#endif // 
