@@ -1,3 +1,5 @@
+#if 0
+
 
 /*~~~~~~~~~~~~~~~~~~*
 *                  *
@@ -124,13 +126,14 @@ string generatenumberstring(int len) {
 
 int main() {
 
-	ll int t = 10;
+	ll int t = 1000;
 	fprintf(fp, "%lld\n", t);
 
 	REP(tc, t) {
-		int n = 1000000;
+		ll int n = randomInt(4, 6);
 		fprintf(fp, "%lld\n", n);
-		randomArray(0, 1000000000, n);
+		randomArray(-10, 10, n);
+		fprintf(fp, "%lld %lld\n", randomInt(1, n), randomInt(1, n));
 	}
 
 	printf("\nDONE :)\n\n");
@@ -142,4 +145,4 @@ int main() {
 
 
 
-#endif // 
+#endif // 0
