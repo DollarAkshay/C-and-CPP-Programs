@@ -14,7 +14,6 @@
 *.vcxproj
 *.filters
 *.sln
-*.ico
 *.opensdf
 *.exe
 *.ini
