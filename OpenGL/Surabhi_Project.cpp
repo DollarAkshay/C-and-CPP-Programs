@@ -30,6 +30,7 @@ void background() {
 	drawQuad(3 * width / 5, 3 * height / 5, 0, lawnWidth, lawnHeight);	// Top Right
 	drawQuad(0, 3 * height / 5, 0, lawnWidth, lawnHeight);	// Top Left
 
+	// Road
 	glColor3f(0.4, 0.4, 0.4);
 	drawQuad(lawnWidth, 0, 0, width/5, height);	// Vertical Road
 	drawQuad(0, lawnHeight, 0, width, height/5);	// Horizontal Road
