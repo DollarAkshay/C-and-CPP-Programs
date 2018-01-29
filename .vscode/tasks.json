@@ -4,9 +4,15 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "C++ Debug Build",
+            "label": "C++ Debug",
             "type": "shell",
             "command": "g++ $fullFileName -o -g debug"
+        },
+        {
+            "label": "C++ Run",
+            "type": "shell",
+            "command": "g++ $fullFileName -o out; if($?) { .\\out }",
+            "problemMatcher": []
         }
     ]
 }
