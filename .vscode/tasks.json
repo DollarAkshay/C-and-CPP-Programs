@@ -5,14 +5,8 @@
     "tasks": [
         {
             "label": "C++ Debug",
-            "type": "shell",
-            "command": "g++ $fullFileName -o -g debug"
-        },
-        {
-            "label": "C++ Run",
-            "type": "shell",
-            "command": "g++ $fullFileName -o out; if($?) { .\\out }",
-            "problemMatcher": []
+            "type": "process",
+            "command": "g++ '${file}' -g -o out"
         }
     ]
 }
