@@ -1,6 +1,9 @@
 C and C++ Programs
 ==================
 
+### NOTE : My Competitive Coding solutions have been moved to this repository
+
+
 This repository contains most of my C/C++ programs I have written over the years.
 
 * <h4> 2nd Semester Programs</h4>
