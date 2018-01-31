@@ -9,8 +9,6 @@ This repository contains most of my C/C++ programs I have written over the years
  Contains C++ programs in adition to some simple Data Structures programs.
 * <h4> Code Golf</h4>
  Not much but it contains various Code Golf solutions to popular questions and problems.Code Golf is a type of programming competition where the aim is to write the smallest code possible for a given problem.
-* <h4> Competitive Coding</h4>
- This basically contains working solutions to problems found on [Hacker Earth](www.hackerearth.com), [Code Chef](www.codechef.com), [Hacker Rank](www.hackerrank.com), [SPOJ](www.spoj.com)
 * <h4> Games & Grpahics</h4>
  Contains a few simple games likes 2048.Has a few simple ASCII Art animation.
 * <h4> Miscellaneous</h4>
