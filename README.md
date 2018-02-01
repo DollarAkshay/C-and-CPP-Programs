@@ -1,7 +1,7 @@
 C and C++ Programs
 ==================
 
-### NOTE : My Competitive Coding solutions have been moved to this repository
+### NOTE : My Competitive Coding solutions have been moved to this repository : https://github.com/DollarAkshay/Competitive-Coding
 
 
 This repository contains most of my C/C++ programs I have written over the years.
