@@ -1,15 +1,15 @@
-#include<stdio.h>
+#include<stdio.h>  //header files
 #include<conio.h>
 #include<math.h>
 
 int main(){
 
-	int n,found=0,dig=1;
+	int n,found=0,dig=1; // //initialization of variable
 	printf("How many Armstrong numbers do you want to find ? : ");
-	scanf("%d",&n);
+	scanf("%d",&n);				// input of the variable n
 	for (int i = 0; found < n;i++)
 	{
-		if (i >pow((double)10, (double)dig)-1) dig++;
+		if (i >pow((double)10, (double)dig)-1) dig++; 
 		int sum = 0,j=i;
 		while (j>0){
 			sum += pow((double)(j%10), (double)dig);
@@ -20,5 +20,5 @@ int main(){
 			printf("Armstrong %d = %d \n",found, i);		
 		}
 	}
-	_getch();
+	getch();
 }
