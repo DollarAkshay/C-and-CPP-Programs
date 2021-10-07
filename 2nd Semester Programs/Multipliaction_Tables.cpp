@@ -9,3 +9,4 @@ while(++i<11)printf("%dx%d=%d\n",n,i,n*i);
 
 _getch();
 }
+/*End of program
