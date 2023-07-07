@@ -1,5 +1,5 @@
 #include<stdio.h>
-#include<conio.h>
+//#include<conio.h>
 
 void main(){
 
@@ -24,7 +24,7 @@ void main(){
 	for (i = 0; i<n; i++)
 		printf("%d ", a[i]);
 
-	_getch();
+	//_getch();
 }
 
 
